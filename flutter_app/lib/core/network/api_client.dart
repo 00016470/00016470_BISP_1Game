@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -7,7 +8,11 @@ import '../../config/constants.dart';
 class ApiClient {
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage;
-  bool _isRefreshing = false;
+
+  /// Completer used to serialize concurrent token refresh attempts.
+  /// While a refresh is in-flight, subsequent 401 handlers wait on this
+  /// future instead of issuing redundant refresh requests.
+  Completer<String?>? _refreshCompleter;
 
   ApiClient(this._secureStorage) {
     _dio = Dio(
@@ -36,48 +41,67 @@ class ApiClient {
           handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401 && !_isRefreshing) {
-            _isRefreshing = true;
-            try {
-              final refreshToken =
-                  await _secureStorage.read(key: AppConstants.refreshTokenKey);
-              if (refreshToken == null) {
-                _isRefreshing = false;
-                handler.next(error);
-                return;
-              }
-              final refreshResponse = await _dio.post(
-                AppConstants.refreshEndpoint,
-                data: {'refresh': refreshToken},
-                options: Options(headers: {'Authorization': null}),
-              );
-              final newAccessToken =
-                  refreshResponse.data['access'] as String;
-              await _secureStorage.write(
-                  key: AppConstants.accessTokenKey, value: newAccessToken);
-              _isRefreshing = false;
-              final retryOptions = Options(
-                method: error.requestOptions.method,
-                headers: {
-                  ...error.requestOptions.headers,
-                  'Authorization': 'Bearer $newAccessToken',
-                },
-              );
-              final retryResponse = await _dio.request(
-                error.requestOptions.path,
-                data: error.requestOptions.data,
-                queryParameters: error.requestOptions.queryParameters,
-                options: retryOptions,
-              );
-              handler.resolve(retryResponse);
-            } catch (_) {
-              _isRefreshing = false;
+          if (error.response?.statusCode != 401) {
+            handler.next(error);
+            return;
+          }
+
+          // If a refresh is already in-flight, wait for its result.
+          if (_refreshCompleter != null) {
+            final newToken = await _refreshCompleter!.future;
+            if (newToken == null) {
+              handler.next(error);
+            } else {
+              handler.resolve(await _retryRequest(error, newToken));
+            }
+            return;
+          }
+
+          // Become the owner of this refresh cycle.
+          _refreshCompleter = Completer<String?>();
+          try {
+            final refreshToken =
+                await _secureStorage.read(key: AppConstants.refreshTokenKey);
+            if (refreshToken == null) {
+              _refreshCompleter!.complete(null);
+              _refreshCompleter = null;
               await _secureStorage.deleteAll();
               handler.next(error);
+              return;
             }
-          } else {
+            final refreshResponse = await _dio.post(
+              AppConstants.refreshEndpoint,
+              data: {'refresh': refreshToken},
+              options: Options(headers: {'Authorization': null}),
+            );
+            final newAccessToken =
+                refreshResponse.data['access'] as String;
+            await _secureStorage.write(
+                key: AppConstants.accessTokenKey, value: newAccessToken);
+            _refreshCompleter!.complete(newAccessToken);
+            _refreshCompleter = null;
+            handler.resolve(await _retryRequest(error, newAccessToken));
+          } catch (_) {
+            _refreshCompleter!.complete(null);
+            _refreshCompleter = null;
+            await _secureStorage.deleteAll();
             handler.next(error);
           }
+        },
+      ),
+    );
+  }
+
+  Future<Response> _retryRequest(DioException error, String token) {
+    return _dio.request(
+      error.requestOptions.path,
+      data: error.requestOptions.data,
+      queryParameters: error.requestOptions.queryParameters,
+      options: Options(
+        method: error.requestOptions.method,
+        headers: {
+          ...error.requestOptions.headers,
+          'Authorization': 'Bearer $token',
         },
       ),
     );
