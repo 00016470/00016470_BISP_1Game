@@ -260,12 +260,14 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
           const SizedBox(height: 12),
           SizedBox(
             height: 72,
-            child: ListView.separated(
+            child: Builder(builder: (context) {
+              final today = DateTime.now();
+              return ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: 14,
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                final date = DateTime.now().add(Duration(days: index));
+                final date = today.add(Duration(days: index));
                 final isSelected = DateFormat('yyyy-MM-dd')
                         .format(date) ==
                     DateFormat('yyyy-MM-dd').format(_selectedDate);
@@ -321,7 +323,8 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                   ),
                 );
               },
-            ),
+            );
+            }),
           ),
         ],
       ),
