@@ -1,9 +1,13 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
+# Always load .env from the backend/ directory, regardless of working directory
+_ENV_FILE = Path(__file__).parent.parent / ".env"
+
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://postgres:password@localhost:5432/gaming_club"
+    database_url: str = "sqlite+aiosqlite:///./gaming_club.db"
     secret_key: str = "insecure-dev-secret-change-in-production"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
@@ -14,7 +18,7 @@ class Settings(BaseSettings):
     def origins(self) -> list[str]:
         return [o.strip() for o in self.allowed_origins.split(",")]
 
-    model_config = {"env_file": ".env", "extra": "ignore"}
+    model_config = {"env_file": str(_ENV_FILE), "extra": "ignore"}
 
 
 @lru_cache

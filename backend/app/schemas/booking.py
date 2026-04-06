@@ -17,8 +17,12 @@ class BookingResponse(BaseModel):
     club_name: str | None = None
     club_location: str | None = None
     start_time: datetime
+    end_time: datetime | None = None
+    date: str | None = None          # e.g. "Apr 09, 2026"
     duration_hours: float
     computers_booked: int
+    computers_count: int | None = None  # alias for computers_booked
+    total_price: float | None = None
     status: str
     created_at: datetime
 

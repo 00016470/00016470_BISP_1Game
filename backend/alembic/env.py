@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import Base  # noqa: E402
+from app.config import get_settings  # noqa: E402
 # Import all models so their tables are registered on Base.metadata
 from app.models import club, user, booking, refresh_token  # noqa: F401, E402
 
@@ -20,10 +21,8 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Override sqlalchemy.url from env var if present
-database_url = os.getenv("DATABASE_URL")
-if database_url:
-    config.set_main_option("sqlalchemy.url", database_url)
+# Always use the URL from app settings (reads backend/.env correctly)
+config.set_main_option("sqlalchemy.url", get_settings().database_url)
 
 target_metadata = Base.metadata
 

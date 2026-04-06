@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 abstract class NetworkInfo {
@@ -12,13 +13,17 @@ class NetworkInfoImpl implements NetworkInfo {
 
   @override
   Future<bool> get isConnected async {
-    final results = await connectivity.checkConnectivity();
-    return results.any((r) => r != ConnectivityResult.none);
+    // On web, connectivity_plus cannot reliably detect localhost connectivity.
+    // Let the HTTP layer surface errors instead.
+    if (kIsWeb) return true;
+    final result = await connectivity.checkConnectivity();
+    return result != ConnectivityResult.none;
   }
 
   @override
   Stream<bool> get connectivityStream {
+    if (kIsWeb) return Stream.value(true);
     return connectivity.onConnectivityChanged
-        .map((results) => results.any((r) => r != ConnectivityResult.none));
+        .map((result) => result != ConnectivityResult.none);
   }
 }

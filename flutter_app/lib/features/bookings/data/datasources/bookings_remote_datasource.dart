@@ -5,7 +5,8 @@ import '../models/booking_model.dart';
 
 abstract class BookingsRemoteDataSource {
   Future<BookingModel> createBooking({
-    required int clubSlot,
+    required int clubId,
+    required String startTime,
     required int computersCount,
     required int durationHours,
   });
@@ -19,16 +20,18 @@ class BookingsRemoteDataSourceImpl implements BookingsRemoteDataSource {
 
   @override
   Future<BookingModel> createBooking({
-    required int clubSlot,
+    required int clubId,
+    required String startTime,
     required int computersCount,
     required int durationHours,
   }) async {
     final response = await apiClient.post(
       AppConstants.bookingsEndpoint,
       data: {
-        'club_slot': clubSlot,
-        'computers_count': computersCount,
+        'club_id': clubId,
+        'start_time': startTime,
         'duration_hours': durationHours,
+        'computers_booked': computersCount,
       },
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -60,10 +63,11 @@ class BookingsRemoteDataSourceImpl implements BookingsRemoteDataSource {
 
   @override
   Future<BookingModel> cancelBooking(int id) async {
+    // Use POST /bookings/{id}/cancel (backend supports both DELETE and POST)
     final response = await apiClient.post(
-      '${AppConstants.bookingsEndpoint}$id${AppConstants.cancelEndpoint}',
+      '${AppConstants.bookingsEndpoint}/$id${AppConstants.cancelEndpoint}',
     );
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       return BookingModel.fromJson(response.data as Map<String, dynamic>);
     }
     throw ServerException(

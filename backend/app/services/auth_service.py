@@ -11,7 +11,7 @@ from app.config import get_settings
 from app.exceptions import UnauthorizedError, ConflictError
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse
+from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
 
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -68,10 +68,14 @@ async def register_user(db: AsyncSession, data: RegisterRequest) -> TokenRespons
 
 
 async def login_user(db: AsyncSession, data: LoginRequest) -> TokenResponse:
-    result = await db.execute(select(User).where(User.username == data.username))
+    identifier = data.username or data.email
+    if data.email:
+        result = await db.execute(select(User).where(User.email == data.email))
+    else:
+        result = await db.execute(select(User).where(User.username == identifier))
     user = result.scalar_one_or_none()
     if not user or not verify_password(data.password, user.password_hash):
-        raise UnauthorizedError("Invalid username or password")
+        raise UnauthorizedError("Invalid email/username or password")
 
     return await _issue_tokens(db, user)
 
@@ -117,4 +121,10 @@ async def _issue_tokens(db: AsyncSession, user: User) -> TokenResponse:
     db.add(rt)
     await db.flush()
 
-    return TokenResponse(access_token=access, refresh_token=refresh_str)
+    return TokenResponse(
+        access_token=access,
+        refresh_token=refresh_str,
+        access=access,
+        refresh=refresh_str,
+        user=UserResponse.model_validate(user),
+    )

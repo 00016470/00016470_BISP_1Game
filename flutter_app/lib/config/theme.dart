@@ -11,12 +11,10 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: const Color(AppConstants.backgroundPrimary),
       colorScheme: const ColorScheme.dark(
-        background: Color(AppConstants.backgroundPrimary),
         surface: Color(AppConstants.backgroundSecondary),
         primary: Color(AppConstants.primaryAccent),
         secondary: Color(AppConstants.successColor),
         error: Color(AppConstants.errorColor),
-        onBackground: Colors.white,
         onSurface: Colors.white,
         onPrimary: Color(AppConstants.backgroundPrimary),
       ),
@@ -115,7 +113,7 @@ class AppTheme {
         side: BorderSide(color: const Color(AppConstants.primaryAccent).withOpacity(0.3)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(AppConstants.cardColor),
         elevation: 0,
         shape: RoundedRectangleBorder(

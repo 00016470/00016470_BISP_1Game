@@ -7,6 +7,7 @@ class UserModel extends User {
     required super.email,
     required super.phone,
     super.totalBookings,
+    super.joinedAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -16,6 +17,7 @@ class UserModel extends User {
       email: json['email'] as String,
       phone: json['phone'] as String? ?? '',
       totalBookings: json['total_bookings'] as int?,
+      joinedAt: json['joined_at'] as String?,
     );
   }
 
@@ -25,5 +27,6 @@ class UserModel extends User {
         'email': email,
         'phone': phone,
         'total_bookings': totalBookings,
+        'joined_at': joinedAt,
       };
 }

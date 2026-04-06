@@ -8,18 +8,20 @@ abstract class BookingsEvent extends Equatable {
 class BookingsLoadRequested extends BookingsEvent {}
 
 class BookingCreateRequested extends BookingsEvent {
-  final int clubSlot;
+  final int clubId;
+  final String startTime; // ISO-8601 datetime, e.g. "2026-04-09T14:00:00Z"
   final int computersCount;
   final int durationHours;
 
   BookingCreateRequested({
-    required this.clubSlot,
+    required this.clubId,
+    required this.startTime,
     required this.computersCount,
     required this.durationHours,
   });
 
   @override
-  List<Object> get props => [clubSlot, computersCount, durationHours];
+  List<Object> get props => [clubId, startTime, computersCount, durationHours];
 }
 
 class BookingCancelRequested extends BookingsEvent {

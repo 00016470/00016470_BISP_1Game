@@ -389,7 +389,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
   void _onBookNow() async {
     if (_selectedSlot == null || _club == null) return;
     final booked = await BookingBottomSheet.show(
-        context, _club!, _selectedSlot!);
+        context, _club!, _selectedSlot!, _selectedDate);
     if (booked == true) {
       setState(() => _selectedSlot = null);
       _loadSlots();

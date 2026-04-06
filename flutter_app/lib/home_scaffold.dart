@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'config/constants.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/bookings/presentation/bloc/bookings_bloc.dart';
 import 'features/clubs/presentation/bloc/clubs_bloc.dart';
@@ -21,6 +22,19 @@ class HomeScaffold extends StatefulWidget {
 
 class _HomeScaffoldState extends State<HomeScaffold> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // If home is loaded directly (e.g., page refresh on web), re-check auth
+    // so the profile page doesn't stay stuck on the loading spinner.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authBloc = context.read<AuthBloc>();
+      if (authBloc.state is AuthInitial) {
+        authBloc.add(AuthCheckRequested());
+      }
+    });
+  }
 
   final _pages = const [
     ClubsListPage(),

@@ -49,7 +49,6 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
         remoteDataSource: sl<AuthRemoteDataSource>(),
         secureStorage: sl<FlutterSecureStorage>(),
-        networkInfo: sl<NetworkInfo>(),
       ));
 
   // Auth use cases
@@ -57,8 +56,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RegisterUseCase(sl<AuthRepository>()));
   sl.registerLazySingleton(() => LogoutUseCase(sl<AuthRepository>()));
 
-  // Auth BLoC
-  sl.registerFactory(() => AuthBloc(
+  // Auth BLoC — singleton so the same auth state is shared across all routes
+  sl.registerLazySingleton(() => AuthBloc(
         loginUseCase: sl<LoginUseCase>(),
         registerUseCase: sl<RegisterUseCase>(),
         logoutUseCase: sl<LogoutUseCase>(),

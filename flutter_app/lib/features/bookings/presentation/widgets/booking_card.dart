@@ -11,17 +11,32 @@ class BookingCard extends StatelessWidget {
   const BookingCard({super.key, required this.booking, this.index = 0});
 
   Color get _statusColor {
-    switch (booking.status) {
-      case 'confirmed':
+    switch (booking.status.toUpperCase()) {
+      case 'ACTIVE':
         return const Color(AppConstants.primaryAccent);
-      case 'pending':
-        return const Color(AppConstants.warningColor);
-      case 'completed':
+      case 'COMPLETED':
         return const Color(AppConstants.successColor);
-      case 'cancelled':
+      case 'CANCELLED':
         return const Color(AppConstants.errorColor);
+      case 'EXPIRED':
+        return const Color(AppConstants.warningColor);
       default:
         return Colors.white38;
+    }
+  }
+
+  String get _statusLabel {
+    switch (booking.status.toUpperCase()) {
+      case 'ACTIVE':
+        return 'CONFIRMED';
+      case 'COMPLETED':
+        return 'COMPLETED';
+      case 'CANCELLED':
+        return 'CANCELLED';
+      case 'EXPIRED':
+        return 'EXPIRED';
+      default:
+        return booking.status.toUpperCase();
     }
   }
 
@@ -32,12 +47,10 @@ class BookingCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(AppConstants.cardColor),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _statusColor.withOpacity(0.2),
-        ),
+        border: Border.all(color: _statusColor.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: _statusColor.withOpacity(0.05),
+            color: _statusColor.withValues(alpha: 0.05),
             blurRadius: 16,
           ),
         ],
@@ -48,7 +61,9 @@ class BookingCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            if (booking.clubLocation.isNotEmpty) _buildLocation(),
+            const SizedBox(height: 10),
             _buildDetails(),
             const SizedBox(height: 12),
             _buildFooter(),
@@ -77,17 +92,18 @@ class BookingCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: _statusColor.withOpacity(0.1),
+            color: _statusColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _statusColor.withOpacity(0.4)),
+            border: Border.all(color: _statusColor.withValues(alpha: 0.4)),
           ),
           child: Text(
-            booking.status.toUpperCase(),
+            _statusLabel,
             style: GoogleFonts.orbitron(
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: FontWeight.w600,
               color: _statusColor,
               letterSpacing: 1,
@@ -98,7 +114,28 @@ class BookingCard extends StatelessWidget {
     );
   }
 
+  Widget _buildLocation() {
+    return Row(
+      children: [
+        Icon(Icons.location_on_outlined,
+            size: 13, color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.7)),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            booking.clubLocation,
+            style: GoogleFonts.inter(fontSize: 11, color: Colors.white38),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDetails() {
+    final durationLabel = booking.durationHours == booking.durationHours.roundToDouble()
+        ? '${booking.durationHours.toInt()}h'
+        : '${booking.durationHours}h';
     return Column(
       children: [
         _DetailRow(
@@ -109,15 +146,13 @@ class BookingCard extends StatelessWidget {
         const SizedBox(height: 6),
         _DetailRow(
           icon: Icons.access_time_outlined,
-          text:
-              '${_fmt(booking.startTime)} — ${_fmt(booking.endTime)}',
+          text: '${_fmt(booking.startTime)} — ${_fmt(booking.endTime)}',
           iconColor: const Color(AppConstants.primaryAccent),
         ),
         const SizedBox(height: 6),
         _DetailRow(
           icon: Icons.computer_outlined,
-          text:
-              '${booking.computersCount} PC · ${booking.durationHours}h',
+          text: '${booking.computersCount} PC · $durationLabel',
           iconColor: const Color(AppConstants.successColor),
         ),
       ],

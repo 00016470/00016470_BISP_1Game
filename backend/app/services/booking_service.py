@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import and_, func, select, text
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import ConflictError, ForbiddenError, NotFoundError, ValidationError
@@ -10,6 +10,9 @@ from app.models.user import User
 from app.schemas.booking import BookingCreate, BookingResponse
 from app.services.club_service import get_club_or_404
 
+_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
 
 def _booking_end_time(booking: Booking) -> datetime:
     """Return tz-aware end time for a booking."""
@@ -17,6 +20,31 @@ def _booking_end_time(booking: Booking) -> datetime:
     if st.tzinfo is None:
         st = st.replace(tzinfo=timezone.utc)
     return st + timedelta(hours=booking.duration_hours)
+
+
+def _to_response(booking: Booking, club: Club) -> BookingResponse:
+    st = booking.start_time
+    if st.tzinfo is None:
+        st = st.replace(tzinfo=timezone.utc)
+    end_time = st + timedelta(hours=booking.duration_hours)
+    total_price = float(club.price_per_hour * booking.computers_booked * booking.duration_hours)
+    date_str = f"{_MONTHS[st.month - 1]} {st.day:02d}, {st.year}"
+    return BookingResponse(
+        id=booking.id,
+        user_id=booking.user_id,
+        club_id=booking.club_id,
+        club_name=club.name,
+        club_location=club.location,
+        start_time=booking.start_time,
+        end_time=end_time,
+        date=date_str,
+        duration_hours=booking.duration_hours,
+        computers_booked=booking.computers_booked,
+        computers_count=booking.computers_booked,
+        total_price=total_price,
+        status=booking.status.value,
+        created_at=booking.created_at,
+    )
 
 
 async def create_booking(db: AsyncSession, user: User, data: BookingCreate) -> BookingResponse:
@@ -34,23 +62,17 @@ async def create_booking(db: AsyncSession, user: User, data: BookingCreate) -> B
 
     end = start + timedelta(hours=data.duration_hours)
 
-    # Validate within club hours
     if start.hour < club.opening_hour or end.hour > club.closing_hour or (
         end.hour == club.closing_hour and end.minute > 0
     ):
         raise ValidationError("Booking is outside club operating hours")
 
-    # Fetch all ACTIVE bookings for this club that could overlap with [start, end)
-    # Overlap condition: booking.start_time < end AND booking.start_time >= start - max_duration
-    # We filter broadly then check precisely in Python — but for correctness with SELECT FOR UPDATE
-    # we lock the relevant rows via a time-windowed query.
     result = await db.execute(
         select(Booking)
         .where(
             and_(
                 Booking.club_id == data.club_id,
                 Booking.status == BookingStatus.ACTIVE,
-                # Broad window: start_time within 24 hours before end to narrow lock scope
                 Booking.start_time < end,
                 Booking.start_time >= start - timedelta(hours=24),
             )
@@ -59,11 +81,10 @@ async def create_booking(db: AsyncSession, user: User, data: BookingCreate) -> B
     )
     candidates = result.scalars().all()
 
-    # Precise overlap check in Python
     booked = sum(
         b.computers_booked
         for b in candidates
-        if _booking_end_time(b) > start  # booking end > our start → overlap
+        if _booking_end_time(b) > start
     )
     if booked + data.computers_booked > club.total_computers:
         raise ConflictError(
@@ -89,7 +110,7 @@ async def list_user_bookings(db: AsyncSession, user: User) -> list[BookingRespon
         select(Booking, Club)
         .join(Club, Booking.club_id == Club.id)
         .where(Booking.user_id == user.id)
-        .order_by(Booking.created_at.desc())
+        .order_by(Booking.start_time.desc())
     )
     rows = result.all()
     return [_to_response(b, c) for b, c in rows]
@@ -135,18 +156,3 @@ async def cancel_booking(db: AsyncSession, user: User, booking_id: int) -> Booki
 
     booking.status = BookingStatus.CANCELLED
     return _to_response(booking, club)
-
-
-def _to_response(booking: Booking, club: Club) -> BookingResponse:
-    return BookingResponse(
-        id=booking.id,
-        user_id=booking.user_id,
-        club_id=booking.club_id,
-        club_name=club.name,
-        club_location=club.location,
-        start_time=booking.start_time,
-        duration_hours=booking.duration_hours,
-        computers_booked=booking.computers_booked,
-        status=booking.status.value,
-        created_at=booking.created_at,
-    )

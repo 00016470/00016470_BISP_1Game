@@ -15,14 +15,16 @@ class BookingsRepositoryImpl implements BookingsRepository {
 
   @override
   Future<Either<Failure, Booking>> createBooking({
-    required int clubSlot,
+    required int clubId,
+    required String startTime,
     required int computersCount,
     required int durationHours,
   }) async {
     if (!await networkInfo.isConnected) return const Left(NetworkFailure());
     try {
       final booking = await remoteDataSource.createBooking(
-        clubSlot: clubSlot,
+        clubId: clubId,
+        startTime: startTime,
         computersCount: computersCount,
         durationHours: durationHours,
       );

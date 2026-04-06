@@ -10,7 +10,9 @@ class ServerException implements Exception {
 
 class NetworkException implements Exception {
   final String message;
-  const NetworkException({this.message = 'No internet connection'});
+  const NetworkException({
+    this.message = 'Cannot reach server. Check your connection and make sure the backend is running.',
+  });
 
   @override
   String toString() => 'NetworkException: $message';

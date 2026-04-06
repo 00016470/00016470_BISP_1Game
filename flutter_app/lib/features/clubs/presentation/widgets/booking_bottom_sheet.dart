@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../../../config/constants.dart';
 import '../../../../core/widgets/neon_button.dart';
 import '../../../bookings/presentation/bloc/bookings_bloc.dart';
@@ -13,18 +14,25 @@ import '../../domain/entities/slot.dart';
 class BookingBottomSheet extends StatefulWidget {
   final Club club;
   final Slot slot;
+  final DateTime selectedDate;
 
-  const BookingBottomSheet({super.key, required this.club, required this.slot});
+  const BookingBottomSheet({
+    super.key,
+    required this.club,
+    required this.slot,
+    required this.selectedDate,
+  });
 
   static Future<bool?> show(
-      BuildContext context, Club club, Slot slot) {
+      BuildContext context, Club club, Slot slot, DateTime selectedDate) {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => BlocProvider.value(
         value: context.read<BookingsBloc>(),
-        child: BookingBottomSheet(club: club, slot: slot),
+        child: BookingBottomSheet(
+            club: club, slot: slot, selectedDate: selectedDate),
       ),
     );
   }
@@ -77,10 +85,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
           color: Color(AppConstants.backgroundSecondary),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           border: Border(
-            top: BorderSide(
-              color: Color(AppConstants.primaryAccent),
-              width: 1,
-            ),
+            top: BorderSide(color: Color(AppConstants.primaryAccent), width: 1),
           ),
         ),
         padding: EdgeInsets.only(
@@ -126,6 +131,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   }
 
   Widget _buildHeader() {
+    final dateLabel = DateFormat('EEE, MMM d').format(widget.selectedDate);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -139,7 +145,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
           ),
         ),
         Text(
-          widget.club.name,
+          '${widget.club.name} · $dateLabel',
           style: GoogleFonts.inter(fontSize: 14, color: Colors.white54),
         ),
       ],
@@ -221,13 +227,19 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'TOTAL PRICE',
-            style: GoogleFonts.orbitron(
-              fontSize: 12,
-              color: Colors.white54,
-              letterSpacing: 1,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'TOTAL PRICE',
+                style: GoogleFonts.orbitron(
+                    fontSize: 10, color: Colors.white38, letterSpacing: 1),
+              ),
+              Text(
+                '$_computersCount PC × $_durationHours hr × ${widget.club.pricePerHour.toStringAsFixed(0)} UZS',
+                style: GoogleFonts.inter(fontSize: 11, color: Colors.white38),
+              ),
+            ],
           ),
           Text(
             '${_totalPrice.toStringAsFixed(0)} UZS',
@@ -260,13 +272,18 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
   }
 
   void _onConfirm() {
-    context.read<BookingsBloc>().add(
-          BookingCreateRequested(
-            clubSlot: widget.slot.id,
-            computersCount: _computersCount,
-            durationHours: _durationHours,
-          ),
-        );
+    final d = widget.selectedDate;
+    final pad = (int n) => n.toString().padLeft(2, '0');
+    final dateStr =
+        '${d.year}-${pad(d.month)}-${pad(d.day)}';
+    final startIso = '${dateStr}T${widget.slot.startTime}:00Z';
+
+    context.read<BookingsBloc>().add(BookingCreateRequested(
+          clubId: widget.club.id,
+          startTime: startIso,
+          computersCount: _computersCount,
+          durationHours: _durationHours,
+        ));
   }
 
   String _fmt(String time) => time.length >= 5 ? time.substring(0, 5) : time;
@@ -359,9 +376,8 @@ class _IconBtn extends StatelessWidget {
         child: Icon(
           icon,
           size: 18,
-          color: enabled
-              ? const Color(AppConstants.primaryAccent)
-              : Colors.white24,
+          color:
+              enabled ? const Color(AppConstants.primaryAccent) : Colors.white24,
         ),
       ),
     );

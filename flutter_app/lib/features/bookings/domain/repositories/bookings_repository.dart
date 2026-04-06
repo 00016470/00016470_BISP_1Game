@@ -4,7 +4,8 @@ import '../entities/booking.dart';
 
 abstract class BookingsRepository {
   Future<Either<Failure, Booking>> createBooking({
-    required int clubSlot,
+    required int clubId,
+    required String startTime,
     required int computersCount,
     required int durationHours,
   });

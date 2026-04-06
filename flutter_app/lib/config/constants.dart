@@ -4,17 +4,17 @@ class AppConstants {
   static const String baseUrl = 'http://localhost:8000';
   static const String apiPrefix = '/api';
 
-  static const String loginEndpoint = '/auth/login/';
-  static const String registerEndpoint = '/auth/register/';
-  static const String refreshEndpoint = '/auth/refresh/';
-  static const String logoutEndpoint = '/auth/logout/';
-  static const String meEndpoint = '/auth/me/';
+  static const String loginEndpoint = '/auth/login';
+  static const String registerEndpoint = '/auth/register';
+  static const String refreshEndpoint = '/auth/refresh';
+  static const String logoutEndpoint = '/auth/logout';
+  static const String meEndpoint = '/auth/me';
 
-  static const String clubsEndpoint = '/clubs/';
-  static const String slotsEndpoint = '/slots/';
+  static const String clubsEndpoint = '/clubs';
+  static const String slotsEndpoint = '/slots';
 
-  static const String bookingsEndpoint = '/bookings/';
-  static const String cancelEndpoint = '/cancel/';
+  static const String bookingsEndpoint = '/bookings';
+  static const String cancelEndpoint = '/cancel';
 
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';

@@ -12,6 +12,11 @@ from slowapi.util import get_remote_address
 
 from app.config import get_settings
 from app.database import engine
+# Import all models first so SQLAlchemy mapper can resolve all relationships
+import app.models.user  # noqa: F401
+import app.models.booking  # noqa: F401
+import app.models.club  # noqa: F401
+import app.models.refresh_token  # noqa: F401
 from app.exceptions import (
     AppException,
     app_exception_handler,
@@ -81,6 +86,7 @@ def create_app() -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.origins,
+        allow_origin_regex=r"http://localhost(:\d+)?",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -98,6 +104,15 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(clubs.router)
     app.include_router(bookings.router)
+
+    @app.get("/", tags=["system"])
+    async def root():
+        return {
+            "message": "Gaming Club Booking API",
+            "health": "/health",
+            "docs": "/docs",
+            "redoc": "/redoc",
+        }
 
     @app.get("/health", tags=["health"])
     async def health_check():

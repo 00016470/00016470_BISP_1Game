@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../error/exceptions.dart';
@@ -113,8 +112,6 @@ class ApiClient {
       return await _dio.get(path, queryParameters: queryParameters);
     } on DioException catch (e) {
       throw _handleDioError(e);
-    } on SocketException {
-      throw const NetworkException();
     }
   }
 
@@ -128,8 +125,14 @@ class ApiClient {
       return await _dio.post(path, data: data, options: options);
     } on DioException catch (e) {
       throw _handleDioError(e);
-    } on SocketException {
-      throw const NetworkException();
+    }
+  }
+
+  Future<Response> delete(String path) async {
+    try {
+      return await _dio.delete(path);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 

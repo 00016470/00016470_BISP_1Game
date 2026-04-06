@@ -41,7 +41,8 @@ class BookingsBloc extends Bloc<BookingsEvent, BookingsState> {
       BookingCreateRequested event, Emitter<BookingsState> emit) async {
     emit(BookingCreating());
     final result = await createBookingUseCase(CreateBookingParams(
-      clubSlot: event.clubSlot,
+      clubId: event.clubId,
+      startTime: event.startTime,
       computersCount: event.computersCount,
       durationHours: event.durationHours,
     ));

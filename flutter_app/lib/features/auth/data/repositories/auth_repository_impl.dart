@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/network/network_info.dart';
 import '../../../../config/constants.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -11,12 +10,10 @@ import '../datasources/auth_remote_datasource.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final FlutterSecureStorage secureStorage;
-  final NetworkInfo networkInfo;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
     required this.secureStorage,
-    required this.networkInfo,
   });
 
   @override
@@ -24,7 +21,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    if (!await networkInfo.isConnected) return const Left(NetworkFailure());
     try {
       final result =
           await remoteDataSource.login(email: email, password: password);
@@ -51,7 +47,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String phone,
   }) async {
-    if (!await networkInfo.isConnected) return const Left(NetworkFailure());
     try {
       final result = await remoteDataSource.register(
         username: username,
@@ -96,7 +91,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> getCurrentUser() async {
-    if (!await networkInfo.isConnected) return const Left(NetworkFailure());
     try {
       final user = await remoteDataSource.getCurrentUser();
       return Right(user);

@@ -42,9 +42,19 @@ async def get_booking_endpoint(
 
 
 @router.delete("/{booking_id}", response_model=BookingResponse)
-async def cancel_booking_endpoint(
+async def cancel_booking_delete(
     booking_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    return await cancel_booking(db, current_user, booking_id)
+
+
+@router.post("/{booking_id}/cancel", response_model=BookingResponse)
+async def cancel_booking_post(
+    booking_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Alias for DELETE /{booking_id} — supports clients that prefer POST."""
     return await cancel_booking(db, current_user, booking_id)

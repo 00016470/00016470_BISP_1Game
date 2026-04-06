@@ -92,6 +92,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       username: m['username'] as String? ?? '',
       email: m['email'] as String? ?? '',
       phone: m['phone'] as String? ?? '',
+      totalBookings: m['total_bookings'] as int?,
+      joinedAt: m['joined_at'] as String?,
     );
   }
 }
@@ -102,5 +104,7 @@ class _InlineUser extends User {
     required super.username,
     required super.email,
     required super.phone,
+    super.totalBookings,
+    super.joinedAt,
   });
 }

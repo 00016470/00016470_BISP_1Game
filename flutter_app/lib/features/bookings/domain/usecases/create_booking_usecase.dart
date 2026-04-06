@@ -12,7 +12,8 @@ class CreateBookingUseCase implements UseCase<Booking, CreateBookingParams> {
   @override
   Future<Either<Failure, Booking>> call(CreateBookingParams params) {
     return repository.createBooking(
-      clubSlot: params.clubSlot,
+      clubId: params.clubId,
+      startTime: params.startTime,
       computersCount: params.computersCount,
       durationHours: params.durationHours,
     );
@@ -20,16 +21,18 @@ class CreateBookingUseCase implements UseCase<Booking, CreateBookingParams> {
 }
 
 class CreateBookingParams extends Equatable {
-  final int clubSlot;
+  final int clubId;
+  final String startTime;
   final int computersCount;
   final int durationHours;
 
   const CreateBookingParams({
-    required this.clubSlot,
+    required this.clubId,
+    required this.startTime,
     required this.computersCount,
     required this.durationHours,
   });
 
   @override
-  List<Object> get props => [clubSlot, computersCount, durationHours];
+  List<Object> get props => [clubId, startTime, computersCount, durationHours];
 }
