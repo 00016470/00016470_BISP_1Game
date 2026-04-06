@@ -137,7 +137,7 @@ class _SlotTile extends StatelessWidget {
             Text(
               isDisabled
                   ? 'FULL'
-                  : '\${slot.availableComputers} PC',
+                  : '${slot.availableComputers} PC',
               style: GoogleFonts.inter(
                 fontSize: 9,
                 color: _textColor.withOpacity(0.7),

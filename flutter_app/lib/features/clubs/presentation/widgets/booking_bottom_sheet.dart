@@ -165,7 +165,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '\${_fmt(widget.slot.startTime)} — \${_fmt(widget.slot.endTime)}',
+                '${_fmt(widget.slot.startTime)} — ${_fmt(widget.slot.endTime)}',
                 style: GoogleFonts.orbitron(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -173,7 +173,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
                 ),
               ),
               Text(
-                '\${widget.slot.availableComputers} computers available',
+                '${widget.slot.availableComputers} computers available',
                 style: GoogleFonts.inter(fontSize: 12, color: Colors.white54),
               ),
             ],
@@ -230,7 +230,7 @@ class _BookingBottomSheetState extends State<BookingBottomSheet> {
             ),
           ),
           Text(
-            '\${_totalPrice.toStringAsFixed(0)} UZS',
+            '${_totalPrice.toStringAsFixed(0)} UZS',
             style: GoogleFonts.orbitron(
               fontSize: 20,
               fontWeight: FontWeight.bold,

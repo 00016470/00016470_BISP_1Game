@@ -5,7 +5,7 @@ class ServerException implements Exception {
   const ServerException({required this.message, this.statusCode});
 
   @override
-  String toString() => 'ServerException: \$message (status: \$statusCode)';
+  String toString() => 'ServerException: $message (status: $statusCode)';
 }
 
 class NetworkException implements Exception {
@@ -13,7 +13,7 @@ class NetworkException implements Exception {
   const NetworkException({this.message = 'No internet connection'});
 
   @override
-  String toString() => 'NetworkException: \$message';
+  String toString() => 'NetworkException: $message';
 }
 
 class AuthException implements Exception {
@@ -21,7 +21,7 @@ class AuthException implements Exception {
   const AuthException({required this.message});
 
   @override
-  String toString() => 'AuthException: \$message';
+  String toString() => 'AuthException: $message';
 }
 
 class CacheException implements Exception {
@@ -29,7 +29,7 @@ class CacheException implements Exception {
   const CacheException({required this.message});
 
   @override
-  String toString() => 'CacheException: \$message';
+  String toString() => 'CacheException: $message';
 }
 
 class ConflictException implements Exception {
@@ -37,5 +37,5 @@ class ConflictException implements Exception {
   const ConflictException({required this.message});
 
   @override
-  String toString() => 'ConflictException: \$message';
+  String toString() => 'ConflictException: $message';
 }

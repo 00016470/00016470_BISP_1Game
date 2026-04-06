@@ -110,14 +110,14 @@ class BookingCard extends StatelessWidget {
         _DetailRow(
           icon: Icons.access_time_outlined,
           text:
-              '\${_fmt(booking.startTime)} — \${_fmt(booking.endTime)}',
+              '${_fmt(booking.startTime)} — ${_fmt(booking.endTime)}',
           iconColor: const Color(AppConstants.primaryAccent),
         ),
         const SizedBox(height: 6),
         _DetailRow(
           icon: Icons.computer_outlined,
           text:
-              '\${booking.computersCount} PC · \${booking.durationHours}h',
+              '${booking.computersCount} PC · ${booking.durationHours}h',
           iconColor: const Color(AppConstants.successColor),
         ),
       ],
@@ -129,11 +129,11 @@ class BookingCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Booking #\${booking.id}',
+          'Booking #${booking.id}',
           style: GoogleFonts.inter(fontSize: 11, color: Colors.white24),
         ),
         Text(
-          '\${booking.totalPrice.toStringAsFixed(0)} UZS',
+          '${booking.totalPrice.toStringAsFixed(0)} UZS',
           style: GoogleFonts.orbitron(
             fontSize: 14,
             fontWeight: FontWeight.bold,

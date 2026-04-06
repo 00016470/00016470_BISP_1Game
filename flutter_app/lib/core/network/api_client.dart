@@ -12,7 +12,7 @@ class ApiClient {
   ApiClient(this._secureStorage) {
     _dio = Dio(
       BaseOptions(
-        baseUrl: '\${AppConstants.baseUrl}\${AppConstants.apiPrefix}',
+        baseUrl: '${AppConstants.baseUrl}${AppConstants.apiPrefix}',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {
@@ -31,7 +31,7 @@ class ApiClient {
           final token =
               await _secureStorage.read(key: AppConstants.accessTokenKey);
           if (token != null) {
-            options.headers['Authorization'] = 'Bearer \$token';
+            options.headers['Authorization'] = 'Bearer $token';
           }
           handler.next(options);
         },
@@ -60,7 +60,7 @@ class ApiClient {
                 method: error.requestOptions.method,
                 headers: {
                   ...error.requestOptions.headers,
-                  'Authorization': 'Bearer \$newAccessToken',
+                  'Authorization': 'Bearer $newAccessToken',
                 },
               );
               final retryResponse = await _dio.request(

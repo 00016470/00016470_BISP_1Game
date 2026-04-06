@@ -178,7 +178,7 @@ class ClubCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  '\${club.pricePerHour.toStringAsFixed(0)} UZS/hr',
+                  '${club.pricePerHour.toStringAsFixed(0)} UZS/hr',
                   style: GoogleFonts.orbitron(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -213,7 +213,7 @@ class ClubCard extends StatelessWidget {
                   size: 14, color: Colors.white38),
               const SizedBox(width: 4),
               Text(
-                '\${club.totalReviews} reviews',
+                '${club.totalReviews} reviews',
                 style:
                     GoogleFonts.inter(fontSize: 12, color: Colors.white38),
               ),

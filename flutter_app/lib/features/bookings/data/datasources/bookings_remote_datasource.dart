@@ -61,7 +61,7 @@ class BookingsRemoteDataSourceImpl implements BookingsRemoteDataSource {
   @override
   Future<BookingModel> cancelBooking(int id) async {
     final response = await apiClient.post(
-      '\${AppConstants.bookingsEndpoint}\$id\${AppConstants.cancelEndpoint}',
+      '${AppConstants.bookingsEndpoint}$id${AppConstants.cancelEndpoint}',
     );
     if (response.statusCode == 200) {
       return BookingModel.fromJson(response.data as Map<String, dynamic>);

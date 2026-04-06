@@ -35,7 +35,7 @@ class ClubsRemoteDataSourceImpl implements ClubsRemoteDataSource {
   @override
   Future<ClubModel> getClubDetail(int id) async {
     final response =
-        await apiClient.get('\${AppConstants.clubsEndpoint}\$id/');
+        await apiClient.get('${AppConstants.clubsEndpoint}$id/');
     if (response.statusCode == 200) {
       return ClubModel.fromJson(response.data as Map<String, dynamic>);
     }
@@ -47,7 +47,7 @@ class ClubsRemoteDataSourceImpl implements ClubsRemoteDataSource {
   Future<List<SlotModel>> getSlots(
       {required int clubId, required String date}) async {
     final response = await apiClient.get(
-      '\${AppConstants.clubsEndpoint}\$clubId\${AppConstants.slotsEndpoint}',
+      '${AppConstants.clubsEndpoint}$clubId${AppConstants.slotsEndpoint}',
       queryParameters: {'date': date},
     );
     if (response.statusCode == 200) {
