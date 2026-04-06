@@ -18,6 +18,7 @@ import 'features/clubs/domain/usecases/get_clubs_usecase.dart';
 import 'features/clubs/domain/usecases/get_club_detail_usecase.dart';
 import 'features/clubs/domain/usecases/get_slots_usecase.dart';
 import 'features/clubs/presentation/bloc/clubs_bloc.dart';
+import 'features/clubs/presentation/bloc/club_detail_bloc.dart';
 import 'features/bookings/data/datasources/bookings_remote_datasource.dart';
 import 'features/bookings/data/repositories/bookings_repository_impl.dart';
 import 'features/bookings/domain/repositories/bookings_repository.dart';
@@ -81,6 +82,10 @@ Future<void> init() async {
   // Clubs BLoC
   sl.registerFactory(
       () => ClubsBloc(getClubsUseCase: sl<GetClubsUseCase>()));
+  sl.registerFactory(() => ClubDetailBloc(
+        getClubDetailUseCase: sl<GetClubDetailUseCase>(),
+        getSlotsUseCase: sl<GetSlotsUseCase>(),
+      ));
 
   // Bookings datasources & repos
   sl.registerLazySingleton<BookingsRemoteDataSource>(
