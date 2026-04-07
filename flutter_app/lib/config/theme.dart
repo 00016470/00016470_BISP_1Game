@@ -62,7 +62,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(AppConstants.backgroundSecondary).withOpacity(0.8),
+        fillColor: const Color(AppConstants.backgroundSecondary).withValues(alpha: 0.8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(AppConstants.primaryAccent), width: 1),
@@ -70,7 +70,7 @@ class AppTheme {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-              color: const Color(AppConstants.primaryAccent).withOpacity(0.3), width: 1),
+              color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.3), width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -108,9 +108,9 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: const Color(AppConstants.backgroundSecondary),
-        selectedColor: const Color(AppConstants.primaryAccent).withOpacity(0.2),
+        selectedColor: const Color(AppConstants.primaryAccent).withValues(alpha: 0.2),
         labelStyle: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-        side: BorderSide(color: const Color(AppConstants.primaryAccent).withOpacity(0.3)),
+        side: BorderSide(color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.3)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       cardTheme: CardThemeData(
@@ -118,7 +118,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: const Color(AppConstants.primaryAccent).withOpacity(0.1)),
+          side: BorderSide(color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.1)),
         ),
       ),
       snackBarTheme: SnackBarThemeData(

@@ -66,31 +66,31 @@ class _SlotTile extends StatelessWidget {
 
   Color get _tileColor {
     if (!slot.isAvailable || slot.isFull) {
-      return const Color(AppConstants.errorColor).withOpacity(0.1);
+      return const Color(AppConstants.errorColor).withValues(alpha: 0.1);
     }
     if (isSelected) {
-      return const Color(AppConstants.primaryAccent).withOpacity(0.2);
+      return const Color(AppConstants.primaryAccent).withValues(alpha: 0.2);
     }
     if (slot.isLowAvailability) {
-      return const Color(AppConstants.warningColor).withOpacity(0.1);
+      return const Color(AppConstants.warningColor).withValues(alpha: 0.1);
     }
-    return const Color(AppConstants.successColor).withOpacity(0.05);
+    return const Color(AppConstants.successColor).withValues(alpha: 0.05);
   }
 
   Color get _borderColor {
     if (!slot.isAvailable || slot.isFull) {
-      return const Color(AppConstants.errorColor).withOpacity(0.4);
+      return const Color(AppConstants.errorColor).withValues(alpha: 0.4);
     }
     if (isSelected) return const Color(AppConstants.primaryAccent);
     if (slot.isLowAvailability) {
-      return const Color(AppConstants.warningColor).withOpacity(0.6);
+      return const Color(AppConstants.warningColor).withValues(alpha: 0.6);
     }
-    return const Color(AppConstants.successColor).withOpacity(0.3);
+    return const Color(AppConstants.successColor).withValues(alpha: 0.3);
   }
 
   Color get _textColor {
     if (!slot.isAvailable || slot.isFull) {
-      return const Color(AppConstants.errorColor).withOpacity(0.6);
+      return const Color(AppConstants.errorColor).withValues(alpha: 0.6);
     }
     if (isSelected) return const Color(AppConstants.primaryAccent);
     if (slot.isLowAvailability) return const Color(AppConstants.warningColor);
@@ -112,7 +112,7 @@ class _SlotTile extends StatelessWidget {
               ? [
                   BoxShadow(
                     color: const Color(AppConstants.primaryAccent)
-                        .withOpacity(0.2),
+                        .withValues(alpha: 0.2),
                     blurRadius: 8,
                   )
                 ]
@@ -131,7 +131,7 @@ class _SlotTile extends StatelessWidget {
             ),
             Text(
               _formatTime(slot.endTime),
-              style: GoogleFonts.inter(fontSize: 9, color: _textColor.withOpacity(0.8)),
+              style: GoogleFonts.inter(fontSize: 9, color: _textColor.withValues(alpha: 0.8)),
             ),
             const SizedBox(height: 2),
             Text(
@@ -140,7 +140,7 @@ class _SlotTile extends StatelessWidget {
                   : '${slot.availableComputers} PC',
               style: GoogleFonts.inter(
                 fontSize: 9,
-                color: _textColor.withOpacity(0.7),
+                color: _textColor.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w600,
               ),
             ),

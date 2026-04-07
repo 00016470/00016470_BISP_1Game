@@ -8,7 +8,7 @@ from app.models.booking import Booking
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RefreshRequest, RegisterRequest, TokenResponse, UserResponse
-from app.services.auth_service import login_user, refresh_access_token, register_user
+from app.services.auth_service import login_user, refresh_access_token, register_user, _get_user_role
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -45,13 +45,17 @@ async def me(
     if current_user.created_at:
         joined_at = f"{_MONTHS[current_user.created_at.month - 1]} {current_user.created_at.year}"
 
+    role = await _get_user_role(db, current_user.id)
+
     return UserResponse(
         id=current_user.id,
         username=current_user.username,
         email=current_user.email,
         phone=current_user.phone,
+        is_approved=current_user.is_approved,
         total_bookings=total_bookings,
         joined_at=joined_at,
+        role=role,
     )
 
 

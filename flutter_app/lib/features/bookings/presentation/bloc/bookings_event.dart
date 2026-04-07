@@ -12,16 +12,18 @@ class BookingCreateRequested extends BookingsEvent {
   final String startTime; // ISO-8601 datetime, e.g. "2026-04-09T14:00:00Z"
   final int computersCount;
   final int durationHours;
+  final String paymentMethod;
 
   BookingCreateRequested({
     required this.clubId,
     required this.startTime,
     required this.computersCount,
     required this.durationHours,
+    this.paymentMethod = 'WALLET',
   });
 
   @override
-  List<Object> get props => [clubId, startTime, computersCount, durationHours];
+  List<Object> get props => [clubId, startTime, computersCount, durationHours, paymentMethod];
 }
 
 class BookingCancelRequested extends BookingsEvent {

@@ -19,6 +19,7 @@ class BookingsRepositoryImpl implements BookingsRepository {
     required String startTime,
     required int computersCount,
     required int durationHours,
+    String paymentMethod = 'WALLET',
   }) async {
     if (!await networkInfo.isConnected) return const Left(NetworkFailure());
     try {
@@ -27,6 +28,7 @@ class BookingsRepositoryImpl implements BookingsRepository {
         startTime: startTime,
         computersCount: computersCount,
         durationHours: durationHours,
+        paymentMethod: paymentMethod,
       );
       return Right(booking);
     } on ConflictException catch (e) {

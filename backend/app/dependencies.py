@@ -1,10 +1,11 @@
-from fastapi import Depends, Header
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.exceptions import UnauthorizedError
+from app.exceptions import ForbiddenError, UnauthorizedError
+from app.models.admin import AdminUser, AdminRole
 from app.models.user import User
 from app.services.auth_service import decode_token
 
@@ -29,3 +30,30 @@ async def get_current_user(
         raise UnauthorizedError("User not found")
 
     return user
+
+
+async def get_current_admin(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    user = await get_current_user(credentials, db)
+
+    result = await db.execute(select(AdminUser).where(AdminUser.user_id == user.id))
+    admin = result.scalar_one_or_none()
+    if not admin:
+        raise ForbiddenError("Admin access required")
+
+    return user
+
+
+async def get_club_admin(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> tuple[User, AdminUser]:
+    """Returns (user, admin_record) — enforces any admin role."""
+    user = await get_current_user(credentials, db)
+    result = await db.execute(select(AdminUser).where(AdminUser.user_id == user.id))
+    admin = result.scalar_one_or_none()
+    if not admin:
+        raise ForbiddenError("Admin access required")
+    return user, admin

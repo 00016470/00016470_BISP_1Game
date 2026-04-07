@@ -64,13 +64,13 @@ class _SplashPageState extends State<SplashPage> {
             height: 100,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(AppConstants.primaryAccent).withOpacity(0.1),
+              color: const Color(AppConstants.primaryAccent).withValues(alpha:0.1),
               border: Border.all(
                   color: const Color(AppConstants.primaryAccent), width: 2),
               boxShadow: [
                 BoxShadow(
                   color:
-                      const Color(AppConstants.primaryAccent).withOpacity(0.4),
+                      const Color(AppConstants.primaryAccent).withValues(alpha:0.4),
                   blurRadius: 40,
                   spreadRadius: 5,
                 ),
@@ -88,7 +88,7 @@ class _SplashPageState extends State<SplashPage> {
                   curve: Curves.elasticOut),
           const SizedBox(height: 32),
           Text(
-            'GAMING CLUB',
+            '1GAME',
             style: GoogleFonts.orbitron(
               fontSize: 28,
               fontWeight: FontWeight.w900,
@@ -116,7 +116,7 @@ class _SplashPageState extends State<SplashPage> {
             width: 120,
             child: LinearProgressIndicator(
               backgroundColor:
-                  const Color(AppConstants.primaryAccent).withOpacity(0.1),
+                  const Color(AppConstants.primaryAccent).withValues(alpha:0.1),
               valueColor: const AlwaysStoppedAnimation(
                   Color(AppConstants.primaryAccent)),
               minHeight: 2,
@@ -132,7 +132,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(AppConstants.primaryAccent).withOpacity(0.04)
+      ..color = const Color(AppConstants.primaryAccent).withValues(alpha:0.04)
       ..strokeWidth = 1;
     const step = 40.0;
     for (double x = 0; x < size.width; x += step) {

@@ -1,4 +1,4 @@
-
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,16 +22,23 @@ class BookingsPage extends StatefulWidget {
 class _BookingsPageState extends State<BookingsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     context.read<BookingsBloc>().add(BookingsLoadRequested());
+    _refreshTimer = Timer.periodic(const Duration(minutes: 2), (_) {
+      if (mounted) {
+        context.read<BookingsBloc>().add(BookingsLoadRequested());
+      }
+    });
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -132,13 +139,13 @@ class _BookingsPageState extends State<BookingsPage>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
               color:
-                  const Color(AppConstants.primaryAccent).withOpacity(0.2)),
+                  const Color(AppConstants.primaryAccent).withValues(alpha: 0.2)),
         ),
         child: TabBar(
           controller: _tabController,
           indicator: BoxDecoration(
             color:
-                const Color(AppConstants.primaryAccent).withOpacity(0.15),
+                const Color(AppConstants.primaryAccent).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: const Color(AppConstants.primaryAccent)),
           ),
@@ -188,7 +195,7 @@ class _BookingsPageState extends State<BookingsPage>
                   SlidableAction(
                     onPressed: (_) => _confirmCancel(booking),
                     backgroundColor:
-                        const Color(AppConstants.errorColor).withOpacity(0.8),
+                        const Color(AppConstants.errorColor).withValues(alpha: 0.8),
                     foregroundColor: Colors.white,
                     icon: Icons.cancel_outlined,
                     label: 'Cancel',

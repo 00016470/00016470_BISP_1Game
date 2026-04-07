@@ -65,12 +65,12 @@ class _NeonButtonState extends State<NeonButton>
           height: widget.height,
           decoration: BoxDecoration(
             color: isDisabled
-                ? buttonColor.withOpacity(0.15)
-                : buttonColor.withOpacity(0.12),
+                ? buttonColor.withValues(alpha: 0.15)
+                : buttonColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isDisabled
-                  ? buttonColor.withOpacity(0.3)
+                  ? buttonColor.withValues(alpha: 0.3)
                   : buttonColor,
               width: 1.5,
             ),
@@ -78,11 +78,11 @@ class _NeonButtonState extends State<NeonButton>
                 ? null
                 : [
                     BoxShadow(
-                        color: buttonColor.withOpacity(0.3),
+                        color: buttonColor.withValues(alpha: 0.3),
                         blurRadius: 12,
                         spreadRadius: 0),
                     BoxShadow(
-                        color: buttonColor.withOpacity(0.15),
+                        color: buttonColor.withValues(alpha: 0.15),
                         blurRadius: 24,
                         spreadRadius: 2),
                   ],
@@ -110,7 +110,7 @@ class _NeonButtonState extends State<NeonButton>
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: isDisabled
-                              ? buttonColor.withOpacity(0.5)
+                              ? buttonColor.withValues(alpha: 0.5)
                               : buttonColor,
                           letterSpacing: 1.5,
                         ),

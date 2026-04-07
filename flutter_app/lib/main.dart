@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'config/theme.dart';
 import 'injection.dart' as di;
 import 'router.dart';
@@ -22,18 +22,22 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  // Yandex MapKit: set Android rendering mode before runApp.
+  // API key is configured in AndroidManifest.xml.
+  AndroidYandexMap.useAndroidViewSurface = true;
+
   await di.init();
 
-  runApp(const GamingClubApp());
+  runApp(const OneGameApp());
 }
 
-class GamingClubApp extends StatelessWidget {
-  const GamingClubApp({super.key});
+class OneGameApp extends StatelessWidget {
+  const OneGameApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Gaming Club Tashkent',
+      title: '1Game',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       routerConfig: router,

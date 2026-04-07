@@ -45,6 +45,7 @@ class BookingsBloc extends Bloc<BookingsEvent, BookingsState> {
       startTime: event.startTime,
       computersCount: event.computersCount,
       durationHours: event.durationHours,
+      paymentMethod: event.paymentMethod,
     ));
     result.fold(
       (failure) => emit(BookingActionError(failure.message,

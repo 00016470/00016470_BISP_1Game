@@ -27,11 +27,11 @@ class ClubCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           color: const Color(AppConstants.cardColor),
           border: Border.all(
-            color: const Color(AppConstants.primaryAccent).withOpacity(0.15),
+            color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.15),
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(AppConstants.primaryAccent).withOpacity(0.05),
+              color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.05),
               blurRadius: 20,
               spreadRadius: 0,
             ),
@@ -94,11 +94,11 @@ class ClubCard extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color(AppConstants.backgroundPrimary)
-                    .withOpacity(0.85),
+                    .withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color:
-                      const Color(AppConstants.primaryAccent).withOpacity(0.4),
+                      const Color(AppConstants.primaryAccent).withValues(alpha: 0.4),
                 ),
               ),
               child: Row(
@@ -123,7 +123,7 @@ class ClubCard extends StatelessWidget {
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: Colors.black.withValues(alpha: 0.6),
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(16)),
                 ),
@@ -170,11 +170,11 @@ class ClubCard extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color:
-                      const Color(AppConstants.primaryAccent).withOpacity(0.1),
+                      const Color(AppConstants.primaryAccent).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: const Color(AppConstants.primaryAccent)
-                        .withOpacity(0.4),
+                        .withValues(alpha: 0.4),
                   ),
                 ),
                 child: Text(

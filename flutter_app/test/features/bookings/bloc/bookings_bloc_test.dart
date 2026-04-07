@@ -20,7 +20,8 @@ class MockCancelBookingUseCase extends Mock implements CancelBookingUseCase {}
 const _testBooking = Booking(
   id: 1,
   clubName: 'Test Club',
-  clubSlot: 10,
+  clubLocation: 'Test Location',
+  clubId: 1,
   date: '2024-01-15',
   startTime: '10:00:00',
   endTime: '12:00:00',
@@ -48,7 +49,7 @@ void main() {
     );
     registerFallbackValue(NoParams());
     registerFallbackValue(
-        const CreateBookingParams(clubSlot: 1, computersCount: 1, durationHours: 1));
+        const CreateBookingParams(clubId: 1, startTime: '2024-01-15T10:00:00Z', computersCount: 1, durationHours: 1));
     registerFallbackValue(const CancelBookingParams(id: 1));
   });
 
@@ -73,7 +74,7 @@ void main() {
       return bloc;
     },
     act: (b) => b.add(BookingCreateRequested(
-        clubSlot: 10, computersCount: 2, durationHours: 2)),
+        clubId: 1, startTime: '2024-01-15T10:00:00Z', computersCount: 2, durationHours: 2)),
     expect: () => [isA<BookingCreating>(), isA<BookingCreated>()],
   );
 
@@ -85,7 +86,7 @@ void main() {
       return bloc;
     },
     act: (b) => b.add(BookingCreateRequested(
-        clubSlot: 10, computersCount: 2, durationHours: 2)),
+        clubId: 1, startTime: '2024-01-15T10:00:00Z', computersCount: 2, durationHours: 2)),
     expect: () => [isA<BookingCreating>(), isA<BookingActionError>()],
   );
 }

@@ -8,9 +8,15 @@ from app.schemas.slot import SlotResponse
 from app.services.club_service import get_club_or_404
 
 
+# Tashkent is UTC+5
+_TASHKENT_TZ = timezone(timedelta(hours=5))
+
+
 async def get_slots(db: AsyncSession, club_id: int, slot_date: date) -> list[SlotResponse]:
     club = await get_club_or_404(db, club_id)
 
+    # Club hours are in local Tashkent time, so compare against local now
+    now_local = datetime.now(_TASHKENT_TZ).replace(tzinfo=None)
     slots: list[SlotResponse] = []
 
     for hour in range(club.opening_hour, club.closing_hour):
@@ -18,6 +24,21 @@ async def get_slots(db: AsyncSession, club_id: int, slot_date: date) -> list[Slo
             slot_date.year, slot_date.month, slot_date.day, hour, 0, 0, tzinfo=timezone.utc
         )
         slot_end = slot_start + timedelta(hours=1)
+
+        # Skip slots whose local time is in the past
+        slot_local = datetime(slot_date.year, slot_date.month, slot_date.day, hour, 0, 0)
+        if slot_local <= now_local:
+            slots.append(
+                SlotResponse(
+                    id=hour,
+                    start_time=slot_start.strftime("%H:%M"),
+                    end_time=slot_end.strftime("%H:%M"),
+                    total_computers=club.total_computers,
+                    available_computers=0,
+                    is_available=False,
+                )
+            )
+            continue
 
         result = await db.execute(
             select(Booking).where(

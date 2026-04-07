@@ -8,6 +8,7 @@ abstract class BookingsRepository {
     required String startTime,
     required int computersCount,
     required int durationHours,
+    String paymentMethod = 'WALLET',
   });
   Future<Either<Failure, List<Booking>>> getBookings();
   Future<Either<Failure, Booking>> cancelBooking(int id);

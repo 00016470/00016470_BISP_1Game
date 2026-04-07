@@ -11,6 +11,12 @@ class ClubModel extends Club {
     required super.totalReviews,
     super.imageUrl,
     required super.isActive,
+    super.latitude,
+    super.longitude,
+    super.address,
+    super.openingHour,
+    super.closingHour,
+    super.totalComputers,
   });
 
   factory ClubModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +30,16 @@ class ClubModel extends Club {
       totalReviews: json['total_reviews'] as int? ?? 0,
       imageUrl: json['image_url'] as String?,
       isActive: json['is_active'] as bool? ?? true,
+      latitude: json['latitude'] != null
+          ? (json['latitude'] as num).toDouble()
+          : null,
+      longitude: json['longitude'] != null
+          ? (json['longitude'] as num).toDouble()
+          : null,
+      address: json['address'] as String?,
+      openingHour: json['opening_hour'] as int?,
+      closingHour: json['closing_hour'] as int?,
+      totalComputers: json['total_computers'] as int?,
     );
   }
 
@@ -37,5 +53,8 @@ class ClubModel extends Club {
         'total_reviews': totalReviews,
         'image_url': imageUrl,
         'is_active': isActive,
+        'latitude': latitude,
+        'longitude': longitude,
+        'address': address,
       };
 }

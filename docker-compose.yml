@@ -28,6 +28,7 @@ services:
       REFRESH_TOKEN_EXPIRE_DAYS: 7
       RATE_LIMIT_PER_MINUTE: 100
       ENVIRONMENT: production
+      YANDEX_MAPKIT_API_KEY: ${YANDEX_MAPKIT_API_KEY:-your-yandex-mapkit-api-key-here}
     ports:
       - "8000:8000"
     depends_on:

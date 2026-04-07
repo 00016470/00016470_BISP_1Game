@@ -23,7 +23,7 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final border =
-        borderColor ?? const Color(AppConstants.primaryAccent).withOpacity(0.2);
+        borderColor ?? const Color(AppConstants.primaryAccent).withValues(alpha: 0.2);
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
@@ -34,15 +34,15 @@ class GlassCard extends StatelessWidget {
             padding: padding ?? const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: const Color(AppConstants.backgroundSecondary)
-                  .withOpacity(0.7),
+                  .withValues(alpha: 0.7),
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(color: border, width: 1),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Colors.white.withOpacity(0.05),
-                  Colors.white.withOpacity(0.01),
+                  Colors.white.withValues(alpha: 0.05),
+                  Colors.white.withValues(alpha: 0.01),
                 ],
               ),
             ),

@@ -4,15 +4,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.booking import BookingCreate, BookingResponse
+from app.schemas.booking import (
+    BookingCreate,
+    BookingResponse,
+    MultiSlotBookingCreate,
+    MultiSlotBookingResponse,
+)
 from app.services.booking_service import (
     cancel_booking,
     create_booking,
+    create_multi_slot_booking,
     get_booking,
     list_user_bookings,
 )
 
 router = APIRouter(prefix="/api/bookings", tags=["bookings"])
+
+
+@router.post("/multi-slot", response_model=MultiSlotBookingResponse, status_code=status.HTTP_201_CREATED)
+async def create_multi_slot_booking_endpoint(
+    data: MultiSlotBookingCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await create_multi_slot_booking(db, current_user, data)
 
 
 @router.post("", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
@@ -56,5 +71,4 @@ async def cancel_booking_post(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Alias for DELETE /{booking_id} — supports clients that prefer POST."""
     return await cancel_booking(db, current_user, booking_id)

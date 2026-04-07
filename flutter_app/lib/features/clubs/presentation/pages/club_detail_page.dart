@@ -2,17 +2,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../config/constants.dart';
 import '../../../../core/widgets/error_widget.dart';
 import '../../../../core/widgets/loading_shimmer.dart';
 import '../../../../core/widgets/neon_button.dart';
-import '../../../bookings/presentation/bloc/bookings_bloc.dart';
-import '../bloc/clubs_bloc.dart';
-import '../bloc/clubs_event.dart';
-import '../bloc/clubs_state.dart';
 import '../widgets/booking_bottom_sheet.dart';
 import '../widgets/slot_grid.dart';
 import '../../domain/entities/club.dart';
@@ -187,11 +183,11 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                     horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(AppConstants.primaryAccent)
-                      .withOpacity(0.1),
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                       color: const Color(AppConstants.primaryAccent)
-                          .withOpacity(0.4)),
+                          .withValues(alpha: 0.4)),
                 ),
                 child: Text(
                   '${_club!.pricePerHour.toStringAsFixed(0)} UZS/hr',
@@ -235,6 +231,46 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
             Text(
               _club!.description,
               style: GoogleFonts.inter(fontSize: 13, color: Colors.white38),
+            ),
+          ],
+          if (_club!.latitude != null && _club!.longitude != null) ...[
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () => context.push('/map', extra: {
+                'clubId': _club!.id,
+                'clubName': _club!.name,
+                'latitude': _club!.latitude,
+                'longitude': _club!.longitude,
+              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(AppConstants.primaryAccent).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.map_outlined, size: 18,
+                        color: Color(AppConstants.primaryAccent)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'View on Map',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(AppConstants.primaryAccent),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 12,
+                        color: Color(AppConstants.primaryAccent)),
+                  ],
+                ),
+              ),
             ),
           ],
         ],
@@ -285,14 +321,14 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? const Color(AppConstants.primaryAccent)
-                              .withOpacity(0.15)
+                              .withValues(alpha: 0.15)
                           : const Color(AppConstants.backgroundSecondary),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? const Color(AppConstants.primaryAccent)
                             : const Color(AppConstants.primaryAccent)
-                                .withOpacity(0.15),
+                                .withValues(alpha: 0.15),
                         width: isSelected ? 1.5 : 1,
                       ),
                     ),

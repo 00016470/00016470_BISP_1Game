@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../config/constants.dart';
 import '../../../../core/widgets/error_widget.dart';
 import '../../../../core/widgets/loading_shimmer.dart';
-import '../../../../core/widgets/offline_banner.dart';
 import '../bloc/clubs_bloc.dart';
 import '../bloc/clubs_event.dart';
 import '../bloc/clubs_state.dart';
@@ -107,7 +106,7 @@ class _ClubsListPageState extends State<ClubsListPage> {
               color: Color(AppConstants.primaryAccent), size: 28),
           const SizedBox(width: 12),
           Text(
-            'GAMING CLUBS',
+            '1GAME',
             style: GoogleFonts.orbitron(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -216,13 +215,13 @@ class _SortChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(AppConstants.primaryAccent).withOpacity(0.15)
+              ? const Color(AppConstants.primaryAccent).withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
                 ? const Color(AppConstants.primaryAccent)
-                : const Color(AppConstants.primaryAccent).withOpacity(0.3),
+                : const Color(AppConstants.primaryAccent).withValues(alpha: 0.3),
           ),
         ),
         child: Row(

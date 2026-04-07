@@ -59,8 +59,10 @@ class UserResponse(BaseModel):
     username: str
     email: str
     phone: str | None
+    is_approved: bool = True
     total_bookings: int = 0
     joined_at: str | None = None
+    role: str = "user"
 
     model_config = {"from_attributes": True}
 
@@ -72,3 +74,4 @@ class TokenResponse(BaseModel):
     access: str
     refresh: str
     user: UserResponse
+    role: str = "user"

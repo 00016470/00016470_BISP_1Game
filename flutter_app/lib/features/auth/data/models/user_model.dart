@@ -8,6 +8,8 @@ class UserModel extends User {
     required super.phone,
     super.totalBookings,
     super.joinedAt,
+    super.role,
+    super.isApproved,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -18,6 +20,8 @@ class UserModel extends User {
       phone: json['phone'] as String? ?? '',
       totalBookings: json['total_bookings'] as int?,
       joinedAt: json['joined_at'] as String?,
+      role: json['role'] as String? ?? 'user',
+      isApproved: json['is_approved'] as bool? ?? true,
     );
   }
 
@@ -28,5 +32,7 @@ class UserModel extends User {
         'phone': phone,
         'total_bookings': totalBookings,
         'joined_at': joinedAt,
+        'role': role,
+        'is_approved': isApproved,
       };
 }

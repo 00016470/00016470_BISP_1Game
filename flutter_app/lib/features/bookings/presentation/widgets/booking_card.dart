@@ -1,14 +1,43 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../../../config/constants.dart';
 import '../../domain/entities/booking.dart';
 
-class BookingCard extends StatelessWidget {
+class BookingCard extends StatefulWidget {
   final Booking booking;
   final int index;
 
   const BookingCard({super.key, required this.booking, this.index = 0});
+
+  @override
+  State<BookingCard> createState() => _BookingCardState();
+}
+
+class _BookingCardState extends State<BookingCard> {
+  Timer? _timer;
+
+  Booking get booking => widget.booking;
+
+  bool get _isActive => booking.status.toUpperCase() == 'ACTIVE';
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isActive) {
+      _timer = Timer.periodic(const Duration(seconds: 30), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   Color get _statusColor {
     switch (booking.status.toUpperCase()) {
@@ -65,13 +94,17 @@ class BookingCard extends StatelessWidget {
             if (booking.clubLocation.isNotEmpty) _buildLocation(),
             const SizedBox(height: 10),
             _buildDetails(),
+            if (_isActive) ...[
+              const SizedBox(height: 10),
+              _buildCountdown(),
+            ],
             const SizedBox(height: 12),
             _buildFooter(),
           ],
         ),
       ),
     )
-        .animate(delay: Duration(milliseconds: index * 80))
+        .animate(delay: Duration(milliseconds: widget.index * 80))
         .fadeIn(duration: 350.ms)
         .slideX(begin: -0.05, end: 0);
   }
@@ -156,6 +189,57 @@ class BookingCard extends StatelessWidget {
           iconColor: const Color(AppConstants.successColor),
         ),
       ],
+    );
+  }
+
+  Duration? get _remaining {
+    try {
+      final dateParts = booking.date.split('-');
+      if (dateParts.length != 3) return null;
+      final timeParts = booking.endTime.split(':');
+      if (timeParts.length < 2) return null;
+      final end = DateTime(
+        int.parse(dateParts[0]),
+        int.parse(dateParts[1]),
+        int.parse(dateParts[2]),
+        int.parse(timeParts[0]),
+        int.parse(timeParts[1]),
+      );
+      final diff = end.difference(DateTime.now());
+      return diff.isNegative ? Duration.zero : diff;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Widget _buildCountdown() {
+    final r = _remaining;
+    if (r == null) return const SizedBox.shrink();
+    final hours = r.inHours;
+    final mins = r.inMinutes.remainder(60);
+    final isExpiring = r.inMinutes <= 15;
+    final color =
+        isExpiring ? const Color(AppConstants.warningColor) : const Color(0xFF76FF03);
+    final label = r == Duration.zero
+        ? 'ENDING NOW'
+        : (hours > 0 ? '${hours}h ${mins}m left' : '${mins}m left');
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(children: [
+        Icon(Icons.timer_rounded, color: color, size: 16),
+        const SizedBox(width: 8),
+        Text(label,
+            style: GoogleFonts.orbitron(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.bold)),
+      ]),
     );
   }
 

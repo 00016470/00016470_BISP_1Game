@@ -51,6 +51,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthError(failure.message)),
       (data) {
         final userData = data['user'] as Map<String, dynamic>;
+        if (data['role'] != null) {
+          userData['role'] = data['role'];
+        }
         emit(AuthAuthenticated(_userFromMap(userData)));
       },
     );
@@ -69,6 +72,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       (failure) => emit(AuthError(failure.message)),
       (data) {
         final userData = data['user'] as Map<String, dynamic>;
+        if (data['role'] != null) {
+          userData['role'] = data['role'];
+        }
         emit(AuthAuthenticated(_userFromMap(userData)));
       },
     );
@@ -94,6 +100,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       phone: m['phone'] as String? ?? '',
       totalBookings: m['total_bookings'] as int?,
       joinedAt: m['joined_at'] as String?,
+      role: m['role'] as String? ?? 'user',
     );
   }
 }
@@ -106,5 +113,6 @@ class _InlineUser extends User {
     required super.phone,
     super.totalBookings,
     super.joinedAt,
+    super.role,
   });
 }

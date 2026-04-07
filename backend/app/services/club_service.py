@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.exceptions import NotFoundError
 from app.models.club import Club
-from app.schemas.club import ClubResponse
+from app.schemas.club import ClubCreateRequest, ClubResponse, ClubUpdateRequest
 
 
 async def list_clubs(
@@ -45,3 +45,32 @@ async def get_club_or_404(db: AsyncSession, club_id: int) -> Club:
     if not club:
         raise NotFoundError("Club")
     return club
+
+
+async def create_club(db: AsyncSession, data: ClubCreateRequest) -> ClubResponse:
+    club = Club(
+        name=data.name,
+        location=data.location,
+        description=data.description,
+        price_per_hour=data.price_per_hour,
+        total_computers=data.total_computers,
+        opening_hour=data.opening_hour,
+        closing_hour=data.closing_hour,
+        image_url=data.image_url,
+        latitude=data.latitude,
+        longitude=data.longitude,
+        address=data.address,
+    )
+    db.add(club)
+    await db.flush()
+    await db.refresh(club)
+    return ClubResponse.model_validate(club)
+
+
+async def update_club(db: AsyncSession, club_id: int, data: ClubUpdateRequest) -> ClubResponse:
+    club = await get_club_or_404(db, club_id)
+    for field, value in data.model_dump(exclude_none=True).items():
+        setattr(club, field, value)
+    await db.flush()
+    await db.refresh(club)
+    return ClubResponse.model_validate(club)

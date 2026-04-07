@@ -16,6 +16,7 @@ class CreateBookingUseCase implements UseCase<Booking, CreateBookingParams> {
       startTime: params.startTime,
       computersCount: params.computersCount,
       durationHours: params.durationHours,
+      paymentMethod: params.paymentMethod,
     );
   }
 }
@@ -25,14 +26,16 @@ class CreateBookingParams extends Equatable {
   final String startTime;
   final int computersCount;
   final int durationHours;
+  final String paymentMethod;
 
   const CreateBookingParams({
     required this.clubId,
     required this.startTime,
     required this.computersCount,
     required this.durationHours,
+    this.paymentMethod = 'WALLET',
   });
 
   @override
-  List<Object> get props => [clubId, startTime, computersCount, durationHours];
+  List<Object> get props => [clubId, startTime, computersCount, durationHours, paymentMethod];
 }

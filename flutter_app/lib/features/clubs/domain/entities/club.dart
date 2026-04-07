@@ -10,6 +10,13 @@ class Club extends Equatable {
   final int totalReviews;
   final String? imageUrl;
   final bool isActive;
+  // Phase 2: map coords
+  final double? latitude;
+  final double? longitude;
+  final String? address;
+  final int? openingHour;
+  final int? closingHour;
+  final int? totalComputers;
 
   const Club({
     required this.id,
@@ -21,11 +28,18 @@ class Club extends Equatable {
     required this.totalReviews,
     this.imageUrl,
     required this.isActive,
+    this.latitude,
+    this.longitude,
+    this.address,
+    this.openingHour,
+    this.closingHour,
+    this.totalComputers,
   });
 
   @override
   List<Object?> get props => [
         id, name, location, description, pricePerHour,
-        rating, totalReviews, imageUrl, isActive
+        rating, totalReviews, imageUrl, isActive,
+        latitude, longitude,
       ];
 }

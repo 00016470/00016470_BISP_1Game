@@ -1,7 +1,11 @@
 class AppConstants {
   AppConstants._();
 
-  static const String baseUrl = 'http://localhost:8000';
+  // Web/desktop use localhost; Android emulator uses 10.0.2.2
+  static const String baseUrl = String.fromEnvironment(
+    'BASE_URL',
+    defaultValue: 'http://localhost:8000',
+  );
   static const String apiPrefix = '/api';
 
   static const String loginEndpoint = '/auth/login';

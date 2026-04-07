@@ -9,6 +9,7 @@ abstract class BookingsRemoteDataSource {
     required String startTime,
     required int computersCount,
     required int durationHours,
+    String paymentMethod = 'WALLET',
   });
   Future<List<BookingModel>> getBookings();
   Future<BookingModel> cancelBooking(int id);
@@ -24,6 +25,7 @@ class BookingsRemoteDataSourceImpl implements BookingsRemoteDataSource {
     required String startTime,
     required int computersCount,
     required int durationHours,
+    String paymentMethod = 'WALLET',
   }) async {
     final response = await apiClient.post(
       AppConstants.bookingsEndpoint,
@@ -32,6 +34,7 @@ class BookingsRemoteDataSourceImpl implements BookingsRemoteDataSource {
         'start_time': startTime,
         'duration_hours': durationHours,
         'computers_booked': computersCount,
+        'payment_method': paymentMethod,
       },
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
