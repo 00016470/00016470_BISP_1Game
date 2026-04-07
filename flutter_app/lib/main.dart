@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart';
 import 'config/theme.dart';
 import 'injection.dart' as di;
 import 'router.dart';
@@ -21,10 +20,6 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-
-  // Yandex MapKit: set Android rendering mode before runApp.
-  // API key is configured in AndroidManifest.xml.
-  AndroidYandexMap.useAndroidViewSurface = true;
 
   await di.init();
 

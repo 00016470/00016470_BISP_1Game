@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:dio/dio.dart' as dio_pkg;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -156,23 +155,23 @@ class _AdminShellState extends State<AdminShell>
                   fontSize: 10, fontWeight: FontWeight.bold),
               unselectedLabelStyle: GoogleFonts.orbitron(fontSize: 10),
               dividerColor: Colors.transparent,
-              tabs: const [
-                Tab(
+              tabs: [
+                const Tab(
                     icon: Icon(Icons.dashboard_rounded, size: 18),
                     text: 'OVERVIEW'),
-                Tab(
+                const Tab(
                     icon: Icon(Icons.videogame_asset_rounded, size: 18),
                     text: 'CLUBS'),
-                Tab(
+                const Tab(
                     icon: Icon(Icons.timer_rounded, size: 18),
                     text: 'SESSIONS'),
-                Tab(
+                const Tab(
                     icon: Icon(Icons.bar_chart_rounded, size: 18),
                     text: 'REVENUE'),
-                Tab(
+                const Tab(
                     icon: Icon(Icons.people_rounded, size: 18),
                     text: 'GAMERS'),
-                Tab(
+                const Tab(
                     icon: Icon(Icons.payment_rounded, size: 18),
                     text: 'PAYMENTS'),
               ],
@@ -348,20 +347,6 @@ class _HourPicker extends StatelessWidget {
                 ]),
           ]),
     );
-  }
-}
-
-Color _statusColor(String s) {
-  switch (s.toUpperCase()) {
-    case 'CONFIRMED':
-    case 'ACTIVE':
-      return const Color(0xFF76FF03);
-    case 'CANCELLED':
-      return Colors.red;
-    case 'COMPLETED':
-      return Colors.blue;
-    default:
-      return Colors.orange;
   }
 }
 

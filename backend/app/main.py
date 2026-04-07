@@ -81,14 +81,15 @@ def create_app() -> FastAPI:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-    app.add_middleware(
-        CORSMiddleware,
+    cors_kwargs = dict(
         allow_origins=settings.origins,
-        allow_origin_regex=r"http://localhost(:\d+)?",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    if not settings.is_production:
+        cors_kwargs["allow_origin_regex"] = r"http://localhost(:\d+)?"
+    app.add_middleware(CORSMiddleware, **cors_kwargs)
 
     app.add_middleware(LoggingMiddleware)
 

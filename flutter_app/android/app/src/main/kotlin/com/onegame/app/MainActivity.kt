@@ -1,4 +1,4 @@
-package com.example.gaming_club_tashkent
+package com.onegame.app
 
 import io.flutter.embedding.android.FlutterActivity
 

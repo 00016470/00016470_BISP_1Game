@@ -154,8 +154,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
     return Container(
       color: const Color(AppConstants.backgroundSecondary),
       child: const Center(
-        child:
-            Icon(Icons.videogame_asset, size: 64, color: Colors.white24),
+        child: Icon(Icons.videogame_asset, size: 64, color: Colors.white24),
       ),
     );
   }

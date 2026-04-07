@@ -22,7 +22,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Always use the URL from app settings (reads backend/.env correctly)
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+config.set_main_option("sqlalchemy.url", get_settings().async_database_url)
 
 target_metadata = Base.metadata
 

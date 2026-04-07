@@ -5,9 +5,10 @@ from app.config import get_settings
 
 settings = get_settings()
 
-_is_sqlite = settings.database_url.startswith("sqlite")
+_db_url = settings.async_database_url
+_is_sqlite = _db_url.startswith("sqlite")
 engine = create_async_engine(
-    settings.database_url,
+    _db_url,
     echo=False,
     **({} if _is_sqlite else {"pool_pre_ping": True, "pool_size": 10, "max_overflow": 20}),
     **({"connect_args": {"check_same_thread": False}} if _is_sqlite else {}),

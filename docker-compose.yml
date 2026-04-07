@@ -4,13 +4,13 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: gaming_user
-      POSTGRES_PASSWORD: gaming_pass
-      POSTGRES_DB: gaming_club
+      POSTGRES_USER: ${POSTGRES_USER:-gaming_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-gaming_club}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gaming_user -d gaming_club"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gaming_user} -d ${POSTGRES_DB:-gaming_club}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,15 +22,17 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql+asyncpg://gaming_user:gaming_pass@db:5432/gaming_club
-      SECRET_KEY: your-super-secret-key-change-in-production-min-32-chars
-      ACCESS_TOKEN_EXPIRE_MINUTES: 15
-      REFRESH_TOKEN_EXPIRE_DAYS: 7
-      RATE_LIMIT_PER_MINUTE: 100
-      ENVIRONMENT: production
-      YANDEX_MAPKIT_API_KEY: ${YANDEX_MAPKIT_API_KEY:-your-yandex-mapkit-api-key-here}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-gaming_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-gaming_club}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-100}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
     ports:
       - "8000:8000"
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -44,3 +46,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

@@ -1,10 +1,9 @@
 class AppConstants {
   AppConstants._();
 
-  // Web/desktop use localhost; Android emulator uses 10.0.2.2
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'http://localhost:8000',
+    defaultValue: 'https://1game-api-production.up.railway.app',
   );
   static const String apiPrefix = '/api';
 

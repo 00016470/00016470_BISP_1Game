@@ -32,7 +32,7 @@ class _SplashPageState extends State<SplashPage> {
       listener: (context, state) {
         if (state is AuthAuthenticated || state is AuthGuest) {
           context.go('/home');
-        } else if (state is AuthUnauthenticated) {
+        } else if (state is AuthUnauthenticated || state is AuthError) {
           context.go('/login');
         }
       },

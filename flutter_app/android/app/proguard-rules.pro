@@ -1,0 +1,4 @@
+-keep class com.yandex.** { *; }
+-keep class com.yandex.mapkit.** { *; }
+-keep class com.yandex.runtime.** { *; }
+-dontwarn com.yandex.**

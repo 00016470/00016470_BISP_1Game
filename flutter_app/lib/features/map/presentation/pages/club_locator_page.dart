@@ -1,13 +1,11 @@
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart';
+import 'package:latlong2/latlong.dart' hide Path;
 import '../../../../config/constants.dart';
 import '../../../../injection.dart';
 import '../../domain/entities/club_map_info.dart';
@@ -38,75 +36,12 @@ class ClubLocatorPage extends StatefulWidget {
 
 class _ClubLocatorPageState extends State<ClubLocatorPage> {
   final _searchController = TextEditingController();
-  YandexMapController? _mapController;
+  final _mapController = MapController();
   bool _availableNow = false;
   ClubMapInfo? _selectedClub;
-  Uint8List? _markerBytes;
 
   // Tashkent city center
-  static const _tashkentCenter =
-      Point(latitude: 41.2995, longitude: 69.2401);
-
-  @override
-  void initState() {
-    super.initState();
-    _generateMarkerIcon();
-  }
-
-  Future<void> _generateMarkerIcon() async {
-    const size = 96.0;
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-
-    // Shadow
-    final shadow = Paint()
-      ..color = Colors.black26
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawCircle(const Offset(size / 2, 30), 22, shadow);
-
-    // Main pin body
-    final pin = Paint()..color = const Color(0xFF6C63FF);
-    canvas.drawCircle(const Offset(size / 2, 28), 22, pin);
-
-    // White border
-    final border = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-    canvas.drawCircle(const Offset(size / 2, 28), 22, border);
-
-    // Pointer triangle
-    final pointer = Path()
-      ..moveTo(size / 2 - 12, 44)
-      ..lineTo(size / 2, 68)
-      ..lineTo(size / 2 + 12, 44)
-      ..close();
-    canvas.drawPath(pointer, pin);
-
-    // Gamepad icon (white)
-    final icon = Paint()..color = Colors.white;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(
-            center: const Offset(size / 2, 28), width: 20, height: 10),
-        const Radius.circular(5),
-      ),
-      icon,
-    );
-    // D-pad dots
-    canvas.drawCircle(const Offset(size / 2 - 5, 28), 2, Paint()..color = const Color(0xFF6C63FF));
-    canvas.drawCircle(const Offset(size / 2 + 5, 28), 2, Paint()..color = const Color(0xFF6C63FF));
-
-    final picture = recorder.endRecording();
-    final img = await picture.toImage(size.toInt(), size.toInt());
-    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-
-    if (mounted) {
-      setState(() {
-        _markerBytes = byteData!.buffer.asUint8List();
-      });
-    }
-  }
+  static const _tashkentCenter = LatLng(41.2995, 69.2401);
 
   @override
   void dispose() {
@@ -114,72 +49,63 @@ class _ClubLocatorPageState extends State<ClubLocatorPage> {
     super.dispose();
   }
 
-  List<PlacemarkMapObject> _buildPlacemarks(List<ClubMapInfo> clubs) {
-    if (_markerBytes == null) return [];
+  List<Marker> _buildMarkers(List<ClubMapInfo> clubs) {
     return clubs.where((c) => c.hasCoordinates).map((club) {
-      return PlacemarkMapObject(
-        mapId: MapObjectId('club_${club.id}'),
-        point: Point(latitude: club.latitude!, longitude: club.longitude!),
-        opacity: 1.0,
-        icon: PlacemarkIcon.single(
-          PlacemarkIconStyle(
-            image: BitmapDescriptor.fromBytes(_markerBytes!),
-            scale: 3,
-          ),
+      final isSelected = _selectedClub?.id == club.id;
+      return Marker(
+        point: LatLng(club.latitude!, club.longitude!),
+        width: 48,
+        height: 58,
+        child: GestureDetector(
+          onTap: () => setState(() => _selectedClub = club),
+          child: _MapPin(selected: isSelected),
         ),
-        onTap: (_, __) => setState(() => _selectedClub = club),
       );
     }).toList();
   }
 
   @override
-  Widget build(BuildContext outerContext) {
+  Widget build(BuildContext context) {
     if (widget.isSingleClubMode) {
-      return _buildSingleClubMap(outerContext);
+      return _buildSingleClubMap(context);
     }
-    return _buildAllClubsMap(outerContext);
+    return _buildAllClubsMap(context);
   }
 
   Widget _buildSingleClubMap(BuildContext context) {
-    final target = Point(
-      latitude: widget.focusLatitude!,
-      longitude: widget.focusLongitude!,
-    );
-
-    final placemarks = _markerBytes != null
-        ? [
-            PlacemarkMapObject(
-              mapId: MapObjectId('focus_${widget.focusClubId}'),
-              point: target,
-              opacity: 1.0,
-              icon: PlacemarkIcon.single(
-                PlacemarkIconStyle(
-                  image: BitmapDescriptor.fromBytes(_markerBytes!),
-                  scale: 3,
-                ),
-              ),
-            ),
-          ]
-        : <PlacemarkMapObject>[];
+    final target = LatLng(widget.focusLatitude!, widget.focusLongitude!);
 
     return Scaffold(
       backgroundColor: const Color(AppConstants.backgroundPrimary),
       body: Stack(
         children: [
-          YandexMap(
-            onMapCreated: (controller) async {
-              _mapController = controller;
-              await controller.moveCamera(
-                CameraUpdate.newCameraPosition(
-                  CameraPosition(target: target, zoom: 16),
-                ),
-              );
-            },
-            mapObjects: placemarks,
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: target,
+              initialZoom: 16,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate:
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.gaming_club_tashkent',
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: target,
+                    width: 48,
+                    height: 58,
+                    child: const _MapPin(selected: true),
+                  ),
+                ],
+              ),
+            ],
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
                   _GlassButton(
@@ -226,24 +152,28 @@ class _ClubLocatorPageState extends State<ClubLocatorPage> {
         backgroundColor: const Color(AppConstants.backgroundPrimary),
         body: Stack(
           children: [
-            // Yandex Map (full screen)
+            // OpenStreetMap (full screen)
             BlocBuilder<MapBloc, MapState>(
               builder: (context, state) {
                 final clubs =
                     state is MapLoaded ? state.clubs : <ClubMapInfo>[];
-                return YandexMap(
-                  onMapCreated: (controller) async {
-                    _mapController = controller;
-                    await controller.moveCamera(
-                      CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                          target: _tashkentCenter,
-                          zoom: 12,
-                        ),
-                      ),
-                    );
-                  },
-                  mapObjects: _buildPlacemarks(clubs),
+                return FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: _tashkentCenter,
+                    initialZoom: 12,
+                    onTap: (_, __) =>
+                        setState(() => _selectedClub = null),
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName:
+                          'com.example.gaming_club_tashkent',
+                    ),
+                    MarkerLayer(markers: _buildMarkers(clubs)),
+                  ],
                 );
               },
             ),
@@ -253,7 +183,6 @@ class _ClubLocatorPageState extends State<ClubLocatorPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back + search
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 8),
@@ -264,27 +193,32 @@ class _ClubLocatorPageState extends State<ClubLocatorPage> {
                           onTap: () => context.pop(),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(child: _SearchBar(controller: _searchController)),
+                        Expanded(
+                            child: _SearchBar(
+                                controller: _searchController)),
                       ],
                     ),
                   ),
-                  // Filter chips
                   BlocSelector<MapBloc, MapState, MapSortMode>(
                     selector: (state) =>
-                        state is MapLoaded ? state.sortMode : MapSortMode.none,
+                        state is MapLoaded
+                            ? state.sortMode
+                            : MapSortMode.none,
                     builder: (context, sortMode) {
                       return _FilterRow(
                         availableNow: _availableNow,
                         sortMode: sortMode,
                         onChanged: (availableNow, sort) {
                           setState(() => _availableNow = availableNow);
-                          context.read<MapBloc>().add(MapClubsLoadRequested(
-                                availableNow: availableNow,
-                                sortMode: sort,
-                                search: _searchController.text.isEmpty
-                                    ? null
-                                    : _searchController.text,
-                              ));
+                          context.read<MapBloc>().add(
+                                MapClubsLoadRequested(
+                                  availableNow: availableNow,
+                                  sortMode: sort,
+                                  search: _searchController.text.isEmpty
+                                      ? null
+                                      : _searchController.text,
+                                ),
+                              );
                         },
                       );
                     },
@@ -293,7 +227,7 @@ class _ClubLocatorPageState extends State<ClubLocatorPage> {
               ),
             ),
 
-            // Bottom sheet — club list
+            // Bottom club list
             Positioned(
               left: 0,
               right: 0,
@@ -307,16 +241,9 @@ class _ClubLocatorPageState extends State<ClubLocatorPage> {
                       onClubTap: (club) {
                         setState(() => _selectedClub = club);
                         if (club.hasCoordinates) {
-                          _mapController?.moveCamera(
-                            CameraUpdate.newCameraPosition(
-                              CameraPosition(
-                                target: Point(
-                                  latitude: club.latitude!,
-                                  longitude: club.longitude!,
-                                ),
-                                zoom: 15,
-                              ),
-                            ),
+                          _mapController.move(
+                            LatLng(club.latitude!, club.longitude!),
+                            15,
                           );
                         }
                       },
@@ -344,6 +271,71 @@ class _ClubLocatorPageState extends State<ClubLocatorPage> {
     );
   }
 }
+
+// ── Custom map pin ────────────────────────────────────────────────────────────
+
+class _MapPin extends StatelessWidget {
+  final bool selected;
+  const _MapPin({this.selected = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected
+        ? const Color(AppConstants.primaryAccent)
+        : const Color(0xFF6C63FF);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2.5),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.5),
+                blurRadius: selected ? 12 : 6,
+                spreadRadius: selected ? 2 : 0,
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.sports_esports_rounded,
+            color: Colors.white,
+            size: selected ? 18 : 16,
+          ),
+        ),
+        CustomPaint(
+          size: const Size(12, 10),
+          painter: _TrianglePainter(color),
+        ),
+      ],
+    );
+  }
+}
+
+class _TrianglePainter extends CustomPainter {
+  final Color color;
+  const _TrianglePainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_TrianglePainter old) => old.color != color;
+}
+
+// ── Support widgets ───────────────────────────────────────────────────────────
 
 class _GlassButton extends StatelessWidget {
   final IconData icon;
@@ -388,14 +380,16 @@ class _SearchBar extends StatelessWidget {
         style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
           hintText: 'Search clubs...',
-          hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 14),
+          hintStyle:
+              GoogleFonts.inter(color: Colors.white38, fontSize: 14),
           prefixIcon: const Icon(Icons.search_rounded,
               color: Color(AppConstants.primaryAccent), size: 18),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
           suffixIcon: controller.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.white38, size: 16),
+                  icon: const Icon(Icons.clear,
+                      color: Colors.white38, size: 16),
                   onPressed: () {
                     controller.clear();
                     context
@@ -467,14 +461,17 @@ class _FilterChip extends StatelessWidget {
   final bool selected;
   final ValueChanged<bool> onSelected;
   const _FilterChip(
-      {required this.label, required this.selected, required this.onSelected});
+      {required this.label,
+      required this.selected,
+      required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => onSelected(!selected),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: selected
               ? const Color(AppConstants.primaryAccent)
@@ -518,7 +515,8 @@ class _ClubBottomSheet extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(AppConstants.backgroundSecondary)
             .withValues(alpha: 0.97),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border.all(color: Colors.white12),
       ),
       child: Column(
@@ -575,7 +573,8 @@ class _ClubCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(AppConstants.primaryAccent).withValues(alpha: 0.1)
+              ? const Color(AppConstants.primaryAccent)
+                  .withValues(alpha: 0.1)
               : const Color(AppConstants.backgroundPrimary),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
@@ -600,7 +599,7 @@ class _ClubCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(Icons.star_rounded, color: Colors.amber, size: 12),
+                const Icon(Icons.star_rounded, color: Colors.amber, size: 12),
                 const SizedBox(width: 2),
                 Text(club.rating.toStringAsFixed(1),
                     style: GoogleFonts.inter(
@@ -617,7 +616,8 @@ class _ClubCard extends StatelessWidget {
             ),
             Text(
               '${fmt.format(club.pricePerHour)} UZS/hr',
-              style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
+              style:
+                  GoogleFonts.inter(color: Colors.white54, fontSize: 10),
             ),
           ],
         ),

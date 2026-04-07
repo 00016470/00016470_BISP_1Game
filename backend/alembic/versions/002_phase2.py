@@ -130,8 +130,10 @@ def upgrade() -> None:
     op.create_index(op.f("ix_payments_booking_id"), "payments", ["booking_id"], unique=False)
 
     # ── Extend bookings ───────────────────────────────────────────────────────
-    # Use batch mode so SQLite handles the copy-and-move internally
-    with op.batch_alter_table("bookings", recreate="always") as batch_op:
+    # Use batch mode for SQLite compatibility, but skip recreate on Postgres
+    dialect = op.get_bind().dialect.name
+    recreate = "always" if dialect == "sqlite" else "auto"
+    with op.batch_alter_table("bookings", recreate=recreate) as batch_op:
         batch_op.add_column(sa.Column("payment_id", sa.Integer(), nullable=True))
         batch_op.add_column(sa.Column("total_price", sa.Numeric(12, 2), nullable=True))
         batch_op.add_column(sa.Column("slot_details", sa.JSON(), nullable=True))
@@ -167,7 +169,9 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table("admin_users")
-    with op.batch_alter_table("bookings", recreate="always") as batch_op:
+    dialect = op.get_bind().dialect.name
+    recreate = "always" if dialect == "sqlite" else "auto"
+    with op.batch_alter_table("bookings", recreate=recreate) as batch_op:
         batch_op.drop_constraint("fk_bookings_payment_id", type_="foreignkey")
         batch_op.drop_column("slot_details")
         batch_op.drop_column("total_price")
