@@ -8,7 +8,7 @@ class AppConstants {
   /// Can be overridden with environment variable BASE_URL.
   static const String baseUrl = String.fromEnvironment(
     'BASE_URL',
-    defaultValue: 'https://1game-api-production.up.railway.app',
+    defaultValue: 'https://backend-production-18fc.up.railway.app',
   );
 
   /// The API prefix for all API endpoints.
