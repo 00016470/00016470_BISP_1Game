@@ -3,7 +3,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../config/constants.dart';
 
+/// A banner widget that displays when the device is offline.
+/// Shows a warning-colored bar with an offline icon and message.
+/// Animates in from the top when displayed.
 class OfflineBanner extends StatelessWidget {
+  /// Creates an OfflineBanner widget.
   const OfflineBanner({super.key});
 
   @override

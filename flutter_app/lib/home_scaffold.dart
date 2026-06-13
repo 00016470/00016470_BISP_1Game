@@ -20,17 +20,25 @@ import 'injection.dart';
 // Nav  order:                Clubs(0), Bookings(1), Wallet(2), Map(3/push), Profile(4), Admin(5)
 // mapNavIndex is always 3. Profile nav = pageIdx + 1 for pageIdx >= 3.
 
+/// The main scaffold widget for the home screen of the application.
+/// Manages navigation between different sections: Clubs, Bookings, Wallet, Profile, and Admin (if user is admin).
+/// Uses IndexedStack for page management and BottomNavigationBar for navigation.
+/// Handles authentication state changes and adjusts available pages accordingly.
 class HomeScaffold extends StatefulWidget {
+  /// Creates a HomeScaffold widget.
   const HomeScaffold({super.key});
 
   @override
   State<HomeScaffold> createState() => _HomeScaffoldState();
 }
 
+/// The state class for HomeScaffold.
+/// Manages the current page index, navigation logic, and Bloc providers.
 class _HomeScaffoldState extends State<HomeScaffold> {
-  // Tracks the _page_ index (not nav index)
+  /// Tracks the current page index for the IndexedStack (not nav index).
   int _pageIndex = 0;
 
+  /// Global key for the WalletPage to allow refreshing its state.
   final _walletKey = GlobalKey<WalletPageState>();
 
   @override
@@ -44,6 +52,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     });
   }
 
+  /// List of page widgets for the IndexedStack.
+  /// Order: Clubs(0), Bookings(1), Wallet(2), Profile(3)
   late final _pages = <Widget>[
     const ClubsListPage(),
     const BookingsPage(),
@@ -51,15 +61,19 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     const ProfilePage(),
   ];
 
+  /// The admin page widget, shown only for admin users.
   static const _adminPage = AdminShell();
 
-  // Nav index 3 = Map (push route), not a tab page
+  /// Navigation index for the Map item (always 3, but it's a push route).
   static const int _mapNavIndex = 3;
 
-  /// Convert page index → nav index (skip the Map slot at nav 3)
+  /// Converts page index to navigation index, skipping the Map slot.
+  /// [page] The page index (0-4).
+  /// Returns the corresponding navigation index.
   int _pageToNav(int page) => page < 3 ? page : page + 1;
 
-  /// Convert nav index → page index (-1 means push /map)
+  /// Converts navigation index to page index.
+  /// Returns -1 for Map (push route), otherwise the page index.
   int _navToPage(int nav) {
     if (nav == _mapNavIndex) return -1; // push
     return nav < _mapNavIndex ? nav : nav - 1;
@@ -103,6 +117,11 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     );
   }
 
+  /// Builds the bottom navigation bar with appropriate items based on user role.
+  /// [context] The build context.
+  /// [isAdmin] Whether the current user is an admin.
+  /// [currentNavIndex] The current navigation index.
+  /// Returns the BottomNavigationBar widget.
   Widget _buildNavBar(
       BuildContext context, bool isAdmin, int currentNavIndex) {
     return Container(

@@ -4,10 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../config/constants.dart';
 import 'neon_button.dart';
 
+/// A widget that displays an error message with optional retry functionality.
+/// Shows an animated error icon, title, message, and a retry button if provided.
+/// Used throughout the app to handle and display error states.
 class AppErrorWidget extends StatelessWidget {
+  /// The error message to display.
   final String message;
+
+  /// Optional callback function to execute when the retry button is pressed.
   final VoidCallback? onRetry;
 
+  /// Creates an AppErrorWidget with the given message and optional retry action.
   const AppErrorWidget({super.key, required this.message, this.onRetry});
 
   @override

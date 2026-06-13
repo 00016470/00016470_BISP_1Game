@@ -30,7 +30,7 @@ class ClubDetailBloc extends Bloc<ClubDetailEvent, ClubDetailState> {
         final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
         emit(ClubDetailLoaded(
           club: club,
-          slots: [],
+          slots: const [],
           slotsLoading: true,
           selectedDate: today,
         ));

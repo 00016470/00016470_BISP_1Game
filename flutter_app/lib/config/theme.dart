@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 
+/// Application theme configuration.
+/// Provides a dark theme for the Flutter app with custom colors,
+/// typography using Google Fonts, and component styling.
 class AppTheme {
   AppTheme._();
 
+  /// The dark theme for the application.
+  /// Uses Material 3 design with a dark color scheme featuring
+  /// blue and cyan accents, Orbitron font for headings, and Inter for body text.
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,

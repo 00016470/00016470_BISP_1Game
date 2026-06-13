@@ -1,3 +1,11 @@
+"""
+Main application module for the gaming club API.
+
+This module sets up the FastAPI application with all necessary middleware,
+routers, exception handlers, and background jobs. It configures CORS,
+rate limiting, logging, and serves static files for uploads.
+"""
+
 import logging
 import logging.config
 from contextlib import asynccontextmanager
@@ -49,6 +57,20 @@ scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Lifespan context manager for the FastAPI application.
+
+    This function handles startup and shutdown events for the application.
+    On startup, it runs database seeding and starts the background scheduler
+    for periodic tasks. On shutdown, it stops the scheduler and disposes
+    of the database engine.
+
+    Args:
+        app: The FastAPI application instance.
+
+    Yields:
+        None
+    """
     try:
         await run_seed()
     except Exception as exc:
@@ -70,6 +92,21 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
+    """
+    Create and configure the FastAPI application.
+
+    This function sets up the FastAPI app with all necessary components:
+    - Rate limiting
+    - CORS middleware
+    - Custom logging middleware
+    - Exception handlers
+    - API routers for different endpoints
+    - Static file serving for uploads
+    - Health check and root endpoints
+
+    Returns:
+        FastAPI: The configured FastAPI application instance.
+    """
     app = FastAPI(
         title="1Game Booking API",
         version="2.0.0",
@@ -115,6 +152,15 @@ def create_app() -> FastAPI:
 
     @app.get("/", tags=["system"])
     async def root():
+        """
+        Root endpoint providing API information.
+
+        Returns basic information about the API including version and links
+        to documentation and health check.
+
+        Returns:
+            dict: API information with links.
+        """
         return {
             "message": "1Game Booking API v2",
             "health": "/health",
@@ -123,6 +169,15 @@ def create_app() -> FastAPI:
 
     @app.get("/health", tags=["health"])
     async def health_check():
+        """
+        Health check endpoint.
+
+        Returns the current status and version of the API to indicate
+        that the service is running properly.
+
+        Returns:
+            dict: Health status information.
+        """
         return {"status": "ok", "version": "2.0.0"}
 
     return app

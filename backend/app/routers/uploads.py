@@ -1,3 +1,10 @@
+"""
+Uploads router for the gaming club application.
+
+This module defines FastAPI routes for handling file uploads,
+specifically image uploads for the application.
+"""
+
 import os
 import uuid
 from pathlib import Path
@@ -20,6 +27,18 @@ async def upload_image(
     file: UploadFile = File(...),
     admin_user: User = Depends(get_current_admin),
 ) -> JSONResponse:
+    """
+    Upload an image file.
+
+    This endpoint allows admins to upload image files for use in the application.
+
+    Args:
+        file: The image file to upload (JPEG, PNG, WebP, or GIF, max 5MB).
+        admin_user: Current authenticated admin user.
+
+    Returns:
+        JSONResponse: Upload result with file URL and filename.
+    """
     if file.content_type not in ALLOWED_TYPES:
         return JSONResponse(
             status_code=400,

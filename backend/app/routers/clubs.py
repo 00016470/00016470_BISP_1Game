@@ -1,3 +1,11 @@
+"""
+Clubs router for the gaming club application.
+
+This module defines FastAPI routes for managing gaming clubs, including
+listing clubs, retrieving club details, creating and updating clubs,
+and managing club slots.
+"""
+
 from datetime import date, datetime, timezone
 from typing import Literal, Optional
 
@@ -24,6 +32,20 @@ async def clubs_map_endpoint(
     search: Optional[str] = Query(None, max_length=200),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Retrieve clubs data for map display.
+
+    This endpoint provides club information optimized for map views,
+    including current availability and search filtering.
+
+    Args:
+        available_now: If True, only show clubs with available computers right now.
+        search: Optional search string to filter clubs by name.
+        db: Database session dependency.
+
+    Returns:
+        List[ClubMapResponse]: List of clubs with map-relevant data.
+    """
     result = await db.execute(select(Club))
     clubs = result.scalars().all()
 
@@ -80,11 +102,36 @@ async def list_clubs_endpoint(
     sortBy: Literal["rating", "price"] | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Retrieve a list of clubs.
+
+    This endpoint returns clubs with optional search and sorting.
+
+    Args:
+        search: Optional search string to filter clubs by name.
+        sortBy: Optional sorting criteria ("rating" or "price").
+        db: Database session dependency.
+
+    Returns:
+        List[ClubResponse]: List of clubs.
+    """
     return await list_clubs(db, search=search, sort_by=sortBy)
 
 
 @router.get("/{club_id}", response_model=ClubResponse)
 async def get_club_endpoint(club_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Retrieve details of a specific club.
+
+    This endpoint returns detailed information about a particular club.
+
+    Args:
+        club_id: The ID of the club to retrieve.
+        db: Database session dependency.
+
+    Returns:
+        ClubResponse: Club details.
+    """
     return await get_club(db, club_id)
 
 
@@ -94,6 +141,19 @@ async def create_club_endpoint(
     db: AsyncSession = Depends(get_db),
     admin_user: User = Depends(get_current_admin),
 ):
+    """
+    Create a new gaming club.
+
+    This endpoint allows admins to create new club entries.
+
+    Args:
+        data: Club creation data.
+        db: Database session dependency.
+        admin_user: Current authenticated admin user.
+
+    Returns:
+        ClubResponse: Created club information.
+    """
     return await create_club(db, data)
 
 
@@ -104,6 +164,20 @@ async def update_club_endpoint(
     db: AsyncSession = Depends(get_db),
     admin_user: User = Depends(get_current_admin),
 ):
+    """
+    Update an existing club.
+
+    This endpoint allows admins to modify club information.
+
+    Args:
+        club_id: The ID of the club to update.
+        data: Updated club data.
+        db: Database session dependency.
+        admin_user: Current authenticated admin user.
+
+    Returns:
+        ClubResponse: Updated club information.
+    """
     return await update_club(db, club_id, data)
 
 
@@ -113,4 +187,17 @@ async def get_slots_endpoint(
     date: date = Query(..., description="Date in YYYY-MM-DD format"),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Retrieve available slots for a club on a specific date.
+
+    This endpoint returns time slots available for booking at the club.
+
+    Args:
+        club_id: The ID of the club.
+        date: The date for which to retrieve slots.
+        db: Database session dependency.
+
+    Returns:
+        List[SlotResponse]: List of available slots.
+    """
     return await get_slots(db, club_id, date)

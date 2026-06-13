@@ -1,3 +1,13 @@
+"""
+Booking Service Module
+
+This module handles all booking-related operations for the gaming club system.
+It includes creating single and multi-slot bookings, checking availability,
+processing payments, listing user bookings, retrieving specific bookings,
+and cancelling bookings with appropriate refunds.
+All functions are asynchronous and interact with the database.
+"""
+
 from datetime import datetime, timedelta, timezone
 import logging
 
@@ -27,6 +37,15 @@ _MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
 
 def _booking_end_time(booking: Booking) -> datetime:
+    """
+    Calculate the end time of a booking.
+
+    Parameters:
+    - booking (Booking): The booking object.
+
+    Returns:
+    - datetime: The end time of the booking in UTC.
+    """
     st = booking.start_time
     if st.tzinfo is None:
         st = st.replace(tzinfo=timezone.utc)
@@ -34,6 +53,17 @@ def _booking_end_time(booking: Booking) -> datetime:
 
 
 def _to_response(booking: Booking, club: Club, payment: Payment | None = None) -> BookingResponse:
+    """
+    Convert a booking object to a response schema.
+
+    Parameters:
+    - booking (Booking): The booking object.
+    - club (Club): The associated club object.
+    - payment (Payment | None): The associated payment object, if any.
+
+    Returns:
+    - BookingResponse: The formatted response object.
+    """
     st = booking.start_time
     if st.tzinfo is None:
         st = st.replace(tzinfo=timezone.utc)
@@ -71,7 +101,21 @@ async def _check_slot_availability(
     end: datetime,
     computers_needed: int,
 ) -> None:
-    """Raises ConflictError if not enough computers available for the time window."""
+    """
+    Check if enough computers are available for the given time slot.
+
+    Raises ConflictError if not enough computers are available.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - club (Club): The club object.
+    - start (datetime): Start time of the slot.
+    - end (datetime): End time of the slot.
+    - computers_needed (int): Number of computers required.
+
+    Raises:
+    - ConflictError: If insufficient computers are available.
+    """
     result = await db.execute(
         select(Booking)
         .where(
@@ -94,6 +138,24 @@ async def _check_slot_availability(
 
 
 async def create_booking(db: AsyncSession, user: User, data: BookingCreate) -> BookingResponse:
+    """
+    Create a new booking for a user.
+
+    Validates the booking time, checks availability, processes payment,
+    and creates the booking record.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user (User): The user making the booking.
+    - data (BookingCreate): The booking creation data.
+
+    Returns:
+    - BookingResponse: The created booking response.
+
+    Raises:
+    - ValidationError: If booking time is invalid or outside operating hours.
+    - ConflictError: If insufficient computers are available.
+    """
     logger.info("create_booking called: user=%s, club_id=%s, payment_method=%s, data=%s",
                 user.id, data.club_id, data.payment_method, data.model_dump())
     club = await get_club_or_404(db, data.club_id)
@@ -205,6 +267,24 @@ async def create_booking(db: AsyncSession, user: User, data: BookingCreate) -> B
 async def create_multi_slot_booking(
     db: AsyncSession, user: User, data: MultiSlotBookingCreate
 ) -> MultiSlotBookingResponse:
+    """
+    Create a multi-slot booking for a user.
+
+    Validates all slots, checks availability for each, processes payment,
+    and creates a single booking record with slot details.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user (User): The user making the booking.
+    - data (MultiSlotBookingCreate): The multi-slot booking data.
+
+    Returns:
+    - MultiSlotBookingResponse: The created multi-slot booking response.
+
+    Raises:
+    - ValidationError: If any slot time is invalid or outside operating hours.
+    - ConflictError: If insufficient computers are available for any slot.
+    """
     club = await get_club_or_404(db, data.club_id)
     now = datetime.now(timezone.utc)
 
@@ -350,6 +430,18 @@ async def create_multi_slot_booking(
 
 
 async def list_user_bookings(db: AsyncSession, user: User) -> list[BookingResponse]:
+    """
+    List all bookings for a user.
+
+    Retrieves all bookings associated with the user, ordered by start time descending.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user (User): The user whose bookings to list.
+
+    Returns:
+    - list[BookingResponse]: List of booking responses.
+    """
     result = await db.execute(
         select(Booking, Club, Payment)
         .join(Club, Booking.club_id == Club.id)
@@ -362,6 +454,22 @@ async def list_user_bookings(db: AsyncSession, user: User) -> list[BookingRespon
 
 
 async def get_booking(db: AsyncSession, user: User, booking_id: int) -> BookingResponse:
+    """
+    Get a specific booking for a user.
+
+    Retrieves the booking details if it belongs to the user.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user (User): The user requesting the booking.
+    - booking_id (int): The ID of the booking to retrieve.
+
+    Returns:
+    - BookingResponse: The booking response.
+
+    Raises:
+    - NotFoundError: If the booking does not exist or does not belong to the user.
+    """
     result = await db.execute(
         select(Booking, Club, Payment)
         .join(Club, Booking.club_id == Club.id)
@@ -375,6 +483,24 @@ async def get_booking(db: AsyncSession, user: User, booking_id: int) -> BookingR
 
 
 async def cancel_booking(db: AsyncSession, user: User, booking_id: int) -> BookingResponse:
+    """
+    Cancel a user's booking.
+
+    Cancels the booking if it hasn't started yet, and processes refunds
+    based on the payment method.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user (User): The user cancelling the booking.
+    - booking_id (int): The ID of the booking to cancel.
+
+    Returns:
+    - BookingResponse: The updated booking response.
+
+    Raises:
+    - NotFoundError: If the booking does not exist or does not belong to the user.
+    - ValidationError: If the booking cannot be cancelled (already started or invalid status).
+    """
     result = await db.execute(
         select(Booking, Club)
         .join(Club, Booking.club_id == Club.id)

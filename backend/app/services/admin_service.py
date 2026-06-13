@@ -1,3 +1,12 @@
+"""
+Admin Service Module
+
+This module provides administrative functionalities for the gaming club management system.
+It includes functions for retrieving dashboard data, managing users, bookings, payments,
+and club-specific information such as sessions, revenue, and live status.
+All functions are asynchronous and interact with the database using SQLAlchemy.
+"""
+
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -29,6 +38,19 @@ from app.schemas.transaction import TransactionResponse
 
 
 async def get_admin_record(db: AsyncSession, user: User) -> AdminUser | None:
+    """
+    Retrieve the admin record for a given user.
+
+    This function queries the database to find an AdminUser record associated
+    with the provided User object. It is used to check if a user has admin privileges.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user (User): The User object for which to retrieve the admin record.
+
+    Returns:
+    - AdminUser | None: The AdminUser record if found, otherwise None.
+    """
     result = await db.execute(
         select(AdminUser).where(AdminUser.user_id == user.id)
     )
@@ -36,12 +58,37 @@ async def get_admin_record(db: AsyncSession, user: User) -> AdminUser | None:
 
 
 def _safe_tz(dt: datetime) -> datetime:
+    """
+    Ensure a datetime object has timezone information.
+
+    If the datetime is naive (no timezone), it replaces it with UTC.
+    If it already has timezone info, returns it as is.
+
+    Parameters:
+    - dt (datetime): The datetime object to process.
+
+    Returns:
+    - datetime: The datetime with UTC timezone if it was naive.
+    """
     if dt.tzinfo is None:
         return dt.replace(tzinfo=timezone.utc)
     return dt
 
 
 async def get_dashboard(db: AsyncSession) -> DashboardResponse:
+    """
+    Retrieve dashboard data for administrators.
+
+    This function aggregates various statistics for the admin dashboard, including
+    today's revenue, active bookings, pending payments, user counts, and revenue
+    trends over the past 30 days. It also provides booking counts and revenue by club.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+
+    Returns:
+    - DashboardResponse: A response object containing all dashboard metrics.
+    """
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
@@ -123,6 +170,23 @@ async def list_admin_bookings(
     page: int = 1,
     per_page: int = 20,
 ) -> dict:
+    """
+    List bookings for admin view with filtering and pagination.
+
+    Retrieves a paginated list of bookings, optionally filtered by club, status,
+    or date. Includes user and club information, as well as payment details.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - club_id (Optional[int]): Filter by club ID. Default None.
+    - status (Optional[str]): Filter by booking status. Default None.
+    - date (Optional[str]): Filter by date in YYYY-MM-DD format. Default None.
+    - page (int): Page number for pagination. Default 1.
+    - per_page (int): Number of items per page. Default 20.
+
+    Returns:
+    - dict: A dictionary with 'items' (list of AdminBookingResponse), 'total', 'page', 'per_page'.
+    """
     q = (
         select(Booking, User, Club, Payment)
         .join(User, Booking.user_id == User.id)
@@ -172,6 +236,24 @@ async def list_admin_payments(
     page: int = 1,
     per_page: int = 20,
 ) -> dict:
+    """
+    List payments for admin view with filtering and pagination.
+
+    Retrieves a paginated list of payments, optionally filtered by status,
+    method, or date range. Includes user and club information.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - status (Optional[str]): Filter by payment status. Default None.
+    - method (Optional[str]): Filter by payment method. Default None.
+    - from_date (Optional[datetime]): Start date for filtering. Default None.
+    - to_date (Optional[datetime]): End date for filtering. Default None.
+    - page (int): Page number for pagination. Default 1.
+    - per_page (int): Number of items per page. Default 20.
+
+    Returns:
+    - dict: A dictionary with 'items' (list of AdminPaymentResponse), 'total', 'page', 'per_page'.
+    """
     q = (
         select(Payment, User, Club)
         .join(User, Payment.user_id == User.id)
@@ -209,6 +291,21 @@ async def list_admin_payments(
 async def list_admin_users(
     db: AsyncSession, page: int = 1, per_page: int = 20, pending_only: bool = False
 ) -> dict:
+    """
+    List users for admin view with pagination.
+
+    Retrieves a paginated list of users, optionally showing only pending approvals.
+    Includes statistics like booking count, total spent, and wallet balance for each user.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - page (int): Page number for pagination. Default 1.
+    - per_page (int): Number of items per page. Default 20.
+    - pending_only (bool): If True, show only users awaiting approval. Default False.
+
+    Returns:
+    - dict: A dictionary with 'items' (list of AdminUserResponse), 'total', 'page', 'per_page'.
+    """
     base = select(User)
     if pending_only:
         base = base.where(User.is_approved == False)
@@ -249,6 +346,22 @@ async def list_admin_users(
 
 
 async def approve_user(db: AsyncSession, user_id: int) -> AdminUserResponse:
+    """
+    Approve a user account.
+
+    Sets the user's is_approved flag to True and commits the change.
+    Returns the updated user information including statistics.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user_id (int): The ID of the user to approve.
+
+    Returns:
+    - AdminUserResponse: The response object with updated user details.
+
+    Raises:
+    - NotFoundError: If the user with the given ID does not exist.
+    """
     from app.exceptions import NotFoundError
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -279,6 +392,22 @@ async def approve_user(db: AsyncSession, user_id: int) -> AdminUserResponse:
 
 
 async def reject_user(db: AsyncSession, user_id: int) -> dict:
+    """
+    Reject a user account.
+
+    Sets the user's is_approved flag to False and commits the change.
+    This effectively denies the user access.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user_id (int): The ID of the user to reject.
+
+    Returns:
+    - dict: A dictionary with 'id', 'username', and 'is_approved' set to False.
+
+    Raises:
+    - NotFoundError: If the user with the given ID does not exist.
+    """
     from app.exceptions import NotFoundError
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -291,6 +420,22 @@ async def reject_user(db: AsyncSession, user_id: int) -> dict:
 
 
 async def delete_user(db: AsyncSession, user_id: int) -> dict:
+    """
+    Delete a user account and all related data.
+
+    Permanently removes the user and all associated records including payments,
+    transactions, bookings, wallet, and admin role. This is a cascading delete.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user_id (int): The ID of the user to delete.
+
+    Returns:
+    - dict: A dictionary with 'id' and 'deleted' set to True.
+
+    Raises:
+    - NotFoundError: If the user with the given ID does not exist.
+    """
     from app.exceptions import NotFoundError
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -320,6 +465,22 @@ async def delete_user(db: AsyncSession, user_id: int) -> dict:
 
 
 async def get_admin_user_detail(db: AsyncSession, user_id: int) -> AdminUserDetailResponse:
+    """
+    Get detailed information about a user for admin view.
+
+    Retrieves comprehensive user details including profile info, wallet balance,
+    recent bookings, payments, and transactions.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user_id (int): The ID of the user to retrieve details for.
+
+    Returns:
+    - AdminUserDetailResponse: A response object with detailed user information.
+
+    Raises:
+    - NotFoundError: If the user with the given ID does not exist.
+    """
     from app.exceptions import NotFoundError
     u_result = await db.execute(select(User).where(User.id == user_id))
     u = u_result.scalar_one_or_none()
@@ -393,6 +554,22 @@ async def get_admin_user_detail(db: AsyncSession, user_id: int) -> AdminUserDeta
 
 
 async def get_club_sessions(db: AsyncSession, club_id: int) -> ClubSessionsResponse:
+    """
+    Get current and upcoming sessions for a specific club.
+
+    Retrieves active sessions (currently running) and upcoming sessions for today,
+    including user details and remaining time for active sessions.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - club_id (int): The ID of the club to get sessions for.
+
+    Returns:
+    - ClubSessionsResponse: A response object with active and upcoming sessions, and available computers.
+
+    Raises:
+    - NotFoundError: If the club with the given ID does not exist.
+    """
     from app.exceptions import NotFoundError
     club_r = await db.execute(select(Club).where(Club.id == club_id))
     club = club_r.scalar_one_or_none()
@@ -464,6 +641,24 @@ async def get_club_revenue(
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
 ) -> ClubRevenueResponse:
+    """
+    Get revenue and session statistics for a specific club.
+
+    Retrieves total revenue, session counts, active sessions, revenue trends
+    over the past 30 days, and recent sessions within the specified date range.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - club_id (int): The ID of the club to get revenue data for.
+    - from_date (Optional[datetime]): Start date for revenue calculation. Default last 30 days.
+    - to_date (Optional[datetime]): End date for revenue calculation. Default now.
+
+    Returns:
+    - ClubRevenueResponse: A response object with revenue metrics and session data.
+
+    Raises:
+    - NotFoundError: If the club with the given ID does not exist.
+    """
     from app.exceptions import NotFoundError
     club_r = await db.execute(select(Club).where(Club.id == club_id))
     club = club_r.scalar_one_or_none()
@@ -561,6 +756,22 @@ async def get_club_revenue(
 
 
 async def get_club_live(db: AsyncSession, club_id: int) -> ClubLiveResponse:
+    """
+    Get live status information for a specific club.
+
+    Retrieves current occupancy, available computers, active sessions count,
+    and upcoming bookings for today.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - club_id (int): The ID of the club to get live status for.
+
+    Returns:
+    - ClubLiveResponse: A response object with live club metrics.
+
+    Raises:
+    - NotFoundError: If the club with the given ID does not exist.
+    """
     from app.exceptions import NotFoundError
     club_r = await db.execute(select(Club).where(Club.id == club_id))
     club = club_r.scalar_one_or_none()

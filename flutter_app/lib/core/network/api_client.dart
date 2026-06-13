@@ -4,8 +4,14 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../error/exceptions.dart';
 import '../../config/constants.dart';
 
+/// HTTP client wrapper for API communication.
+/// Handles authentication, token refresh, and error mapping.
+/// Uses Dio as the underlying HTTP client.
 class ApiClient {
+  /// The Dio instance used for HTTP requests.
   late final Dio _dio;
+
+  /// Secure storage for tokens.
   final FlutterSecureStorage _secureStorage;
 
   /// Completer used to serialize concurrent token refresh attempts.
@@ -13,6 +19,8 @@ class ApiClient {
   /// future instead of issuing redundant refresh requests.
   Completer<String?>? _refreshCompleter;
 
+  /// Creates an ApiClient with secure storage for token management.
+  /// [secureStorage] The storage instance for access and refresh tokens.
   ApiClient(this._secureStorage) {
     _dio = Dio(
       BaseOptions(
@@ -28,6 +36,7 @@ class ApiClient {
     _setupInterceptors();
   }
 
+  /// Sets up Dio interceptors for authentication and error handling.
   void _setupInterceptors() {
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -91,6 +100,10 @@ class ApiClient {
     );
   }
 
+  /// Retries a failed request with a new access token.
+  /// [error] The original DioException.
+  /// [token] The new access token.
+  /// Returns the response from the retried request.
   Future<Response> _retryRequest(DioException error, String token) {
     return _dio.request(
       error.requestOptions.path,
@@ -106,6 +119,11 @@ class ApiClient {
     );
   }
 
+  /// Performs a GET request to the specified path.
+  /// [path] The API endpoint path.
+  /// [queryParameters] Optional query parameters.
+  /// Returns the HTTP response.
+  /// Throws exceptions for network or server errors.
   Future<Response> get(String path,
       {Map<String, dynamic>? queryParameters}) async {
     try {
@@ -115,6 +133,12 @@ class ApiClient {
     }
   }
 
+  /// Performs a POST request to the specified path.
+  /// [path] The API endpoint path.
+  /// [data] The request body data.
+  /// [requiresAuth] Whether the request requires authentication (default: true).
+  /// Returns the HTTP response.
+  /// Throws exceptions for network or server errors.
   Future<Response> post(String path,
       {dynamic data, bool requiresAuth = true}) async {
     try {
@@ -128,6 +152,10 @@ class ApiClient {
     }
   }
 
+  /// Performs a DELETE request to the specified path.
+  /// [path] The API endpoint path.
+  /// Returns the HTTP response.
+  /// Throws exceptions for network or server errors.
   Future<Response> delete(String path) async {
     try {
       return await _dio.delete(path);
@@ -136,6 +164,9 @@ class ApiClient {
     }
   }
 
+  /// Handles Dio exceptions and converts them to domain-specific exceptions.
+  /// [e] The DioException to handle.
+  /// Returns an appropriate exception based on the error type and status code.
   Exception _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionError ||
         e.type == DioExceptionType.unknown) {
@@ -166,5 +197,6 @@ class ApiClient {
     return ServerException(message: message, statusCode: statusCode);
   }
 
+  /// Provides access to the underlying Dio instance for advanced usage.
   Dio get dio => _dio;
 }

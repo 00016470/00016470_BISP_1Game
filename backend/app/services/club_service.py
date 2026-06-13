@@ -1,3 +1,12 @@
+"""
+Club Service Module
+
+This module provides CRUD operations for gaming clubs.
+It includes listing clubs with search and sorting, retrieving individual clubs,
+creating new clubs, and updating existing club information.
+All functions are asynchronous and interact with the database.
+"""
+
 from typing import Literal
 
 from sqlalchemy import or_, select
@@ -13,6 +22,20 @@ async def list_clubs(
     search: str | None = None,
     sort_by: Literal["rating", "price"] | None = None,
 ) -> list[ClubResponse]:
+    """
+    List clubs with optional search and sorting.
+
+    Retrieves a list of clubs, optionally filtered by search term
+    (matching name or location) and sorted by rating or price.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - search (str | None): Search term for name or location. Default None.
+    - sort_by (Literal["rating", "price"] | None): Sort by rating or price. Default None (sort by ID).
+
+    Returns:
+    - list[ClubResponse]: List of club responses.
+    """
     stmt = select(Club)
 
     if search:
@@ -32,6 +55,19 @@ async def list_clubs(
 
 
 async def get_club(db: AsyncSession, club_id: int) -> ClubResponse:
+    """
+    Get a specific club by ID.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - club_id (int): The ID of the club to retrieve.
+
+    Returns:
+    - ClubResponse: The club response.
+
+    Raises:
+    - NotFoundError: If the club does not exist.
+    """
     result = await db.execute(select(Club).where(Club.id == club_id))
     club = result.scalar_one_or_none()
     if not club:

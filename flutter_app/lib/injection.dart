@@ -49,10 +49,16 @@ import 'features/map/data/repositories/map_repository_impl.dart';
 import 'features/map/domain/repositories/map_repository.dart';
 import 'features/map/presentation/bloc/map_bloc.dart';
 
+/// The service locator instance for dependency injection using GetIt.
+/// Provides access to all registered dependencies throughout the application.
 final sl = GetIt.instance;
 
+/// Initializes the dependency injection container.
+/// Registers all external dependencies, core services, and feature-specific
+/// components in the correct order to ensure proper dependency resolution.
+/// This function should be called once at application startup.
 Future<void> init() async {
-  // External
+  // External dependencies (third-party libraries)
   sl.registerLazySingleton<FlutterSecureStorage>(
     () => const FlutterSecureStorage(
       aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -60,13 +66,13 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<Connectivity>(() => Connectivity());
 
-  // Core
+  // Core services
   sl.registerLazySingleton<NetworkInfo>(
       () => NetworkInfoImpl(sl<Connectivity>()));
   sl.registerLazySingleton<ApiClient>(
       () => ApiClient(sl<FlutterSecureStorage>()));
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
+  // ── Auth feature dependencies ─────────────────────────────────────────────
   sl.registerLazySingleton<AuthRemoteDataSource>(
       () => AuthRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
@@ -83,7 +89,7 @@ Future<void> init() async {
         authRepository: sl<AuthRepository>(),
       ));
 
-  // ── Clubs ─────────────────────────────────────────────────────────────────
+  // ── Clubs feature dependencies ────────────────────────────────────────────
   sl.registerLazySingleton<ClubsRemoteDataSource>(
       () => ClubsRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<ClubsRepository>(() => ClubsRepositoryImpl(
@@ -101,7 +107,7 @@ Future<void> init() async {
         getSlotsUseCase: sl<GetSlotsUseCase>(),
       ));
 
-  // ── Bookings ──────────────────────────────────────────────────────────────
+  // ── Bookings feature dependencies ─────────────────────────────────────────
   sl.registerLazySingleton<BookingsRemoteDataSource>(
       () => BookingsRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<BookingsRepository>(() => BookingsRepositoryImpl(
@@ -120,7 +126,7 @@ Future<void> init() async {
         cancelBookingUseCase: sl<CancelBookingUseCase>(),
       ));
 
-  // ── Wallet ────────────────────────────────────────────────────────────────
+  // ── Wallet feature dependencies ───────────────────────────────────────────
   sl.registerLazySingleton<WalletRemoteDataSource>(
       () => WalletRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<WalletRepository>(() =>
@@ -133,7 +139,7 @@ Future<void> init() async {
         topUpWalletUseCase: sl<TopUpWalletUseCase>(),
       ));
 
-  // ── Transactions ──────────────────────────────────────────────────────────
+  // ── Transactions feature dependencies ─────────────────────────────────────
   sl.registerLazySingleton<TransactionRemoteDataSource>(
       () => TransactionRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<TransactionRepository>(() =>
@@ -142,7 +148,7 @@ Future<void> init() async {
   sl.registerFactory(
       () => TransactionBloc(repository: sl<TransactionRepository>()));
 
-  // ── Payments ──────────────────────────────────────────────────────────────
+  // ── Payments feature dependencies ─────────────────────────────────────────
   sl.registerLazySingleton<PaymentRemoteDataSource>(
       () => PaymentRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<PaymentRepository>(() =>
@@ -150,7 +156,7 @@ Future<void> init() async {
   sl.registerFactory(
       () => PaymentBloc(repository: sl<PaymentRepository>()));
 
-  // ── Admin ─────────────────────────────────────────────────────────────────
+  // ── Admin feature dependencies ────────────────────────────────────────────
   sl.registerLazySingleton<AdminRemoteDataSource>(
       () => AdminRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<AdminRepository>(() =>
@@ -158,7 +164,7 @@ Future<void> init() async {
   sl.registerFactory(
       () => AdminBloc(repository: sl<AdminRepository>()));
 
-  // ── Map ───────────────────────────────────────────────────────────────────
+  // ── Map feature dependencies ──────────────────────────────────────────────
   sl.registerLazySingleton<MapRemoteDataSource>(
       () => MapRemoteDataSourceImpl(sl<ApiClient>()));
   sl.registerLazySingleton<MapRepository>(() =>

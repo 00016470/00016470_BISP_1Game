@@ -1,3 +1,10 @@
+"""
+Wallet router for the gaming club application.
+
+This module defines FastAPI routes for managing user wallets,
+including viewing wallet balance and topping up funds.
+"""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 

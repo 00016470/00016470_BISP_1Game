@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../config/constants.dart';
 
+/// A loading shimmer widget that displays animated placeholder cards.
+/// Used to indicate loading state while fetching club data.
+/// Shows a list of 5 shimmering rectangular cards.
 class LoadingShimmer extends StatelessWidget {
+  /// Creates a LoadingShimmer widget.
   const LoadingShimmer({super.key});
 
   @override
@@ -20,7 +24,10 @@ class LoadingShimmer extends StatelessWidget {
   }
 }
 
+/// A private widget representing a single shimmering club card placeholder.
+/// Displays a white rectangular container with rounded corners.
 class _ShimmerClubCard extends StatelessWidget {
+  /// Creates a _ShimmerClubCard widget.
   const _ShimmerClubCard();
 
   @override
@@ -33,7 +40,11 @@ class _ShimmerClubCard extends StatelessWidget {
   }
 }
 
+/// A loading shimmer widget for slot grids.
+/// Used to indicate loading state while fetching slot availability.
+/// Shows a grid of shimmering placeholder slots.
 class SlotShimmer extends StatelessWidget {
+  /// Creates a SlotShimmer widget.
   const SlotShimmer({super.key});
 
   @override

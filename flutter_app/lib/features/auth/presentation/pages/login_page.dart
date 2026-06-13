@@ -10,17 +10,29 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
+/// The login page widget for user authentication.
+/// Displays a form for email and password input, handles login logic,
+/// and navigates to home on successful authentication.
 class LoginPage extends StatefulWidget {
+  /// Creates a LoginPage widget.
   const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
+/// State class for LoginPage that manages form state and UI interactions.
 class _LoginPageState extends State<LoginPage> {
+  /// Global key for the form to validate input fields.
   final _formKey = GlobalKey<FormState>();
+
+  /// Controller for the email input field.
   final _emailCtrl = TextEditingController();
+
+  /// Controller for the password input field.
   final _passwordCtrl = TextEditingController();
+
+  /// Flag to toggle password visibility.
   bool _obscurePassword = true;
 
   @override
@@ -70,6 +82,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /// Builds the header section with app icon and welcome text.
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  /// Builds the login form with email and password fields.
   Widget _buildForm() {
     return GlassCard(
       child: Form(

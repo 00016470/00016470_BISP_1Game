@@ -1,3 +1,12 @@
+"""
+Authentication Service Module
+
+This module handles user authentication, registration, login, and token management.
+It provides functions for password hashing, JWT token creation and validation,
+user registration with wallet creation, login, and token refresh.
+All functions are asynchronous where database interaction is required.
+"""
+
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -22,26 +31,76 @@ ALGORITHM = "HS256"
 
 
 def hash_password(password: str) -> str:
+    """
+    Hash a plain text password using bcrypt.
+
+    Parameters:
+    - password (str): The plain text password to hash.
+
+    Returns:
+    - str: The hashed password string.
+    """
     return pwd_context.hash(password)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
+    """
+    Verify a plain text password against a hashed password.
+
+    Parameters:
+    - plain (str): The plain text password.
+    - hashed (str): The hashed password to compare against.
+
+    Returns:
+    - bool: True if the password matches, False otherwise.
+    """
     return pwd_context.verify(plain, hashed)
 
 
 def create_access_token(subject: int, role: str = "user") -> str:
+    """
+    Create a JWT access token for a user.
+
+    Parameters:
+    - subject (int): The user ID to encode in the token.
+    - role (str): The user's role (default "user").
+
+    Returns:
+    - str: The encoded JWT access token.
+    """
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
     payload = {"sub": str(subject), "exp": expire, "type": "access", "role": role}
     return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
 
 def create_refresh_token_str(subject: int) -> str:
+    """
+    Create a JWT refresh token string for a user.
+
+    Parameters:
+    - subject (int): The user ID to encode in the token.
+
+    Returns:
+    - str: The encoded JWT refresh token.
+    """
     expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
     payload = {"sub": str(subject), "exp": expire, "type": "refresh", "jti": str(uuid.uuid4())}
     return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
 
 def decode_token(token: str) -> dict:
+    """
+    Decode and validate a JWT token.
+
+    Parameters:
+    - token (str): The JWT token to decode.
+
+    Returns:
+    - dict: The decoded payload.
+
+    Raises:
+    - UnauthorizedError: If the token is invalid or expired.
+    """
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
         return payload
@@ -50,6 +109,16 @@ def decode_token(token: str) -> dict:
 
 
 async def _get_user_role(db: AsyncSession, user_id: int) -> str:
+    """
+    Get the role of a user (admin or user).
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user_id (int): The ID of the user.
+
+    Returns:
+    - str: The user's role ("admin" or "user").
+    """
     result = await db.execute(select(AdminUser).where(AdminUser.user_id == user_id))
     admin = result.scalar_one_or_none()
     if admin:
@@ -58,6 +127,23 @@ async def _get_user_role(db: AsyncSession, user_id: int) -> str:
 
 
 async def register_user(db: AsyncSession, data: RegisterRequest, auto_approve: bool = True) -> TokenResponse:
+    """
+    Register a new user and create their wallet.
+
+    Creates a new user account, hashes the password, and automatically creates a wallet.
+    Issues authentication tokens upon successful registration.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - data (RegisterRequest): The registration data including username, email, password, phone.
+    - auto_approve (bool): Whether to auto-approve the user. Default True.
+
+    Returns:
+    - TokenResponse: Authentication tokens and user information.
+
+    Raises:
+    - ConflictError: If username or email is already registered.
+    """
     existing = await db.execute(
         select(User).where((User.username == data.username) | (User.email == data.email))
     )
@@ -83,6 +169,21 @@ async def register_user(db: AsyncSession, data: RegisterRequest, auto_approve: b
 
 
 async def login_user(db: AsyncSession, data: LoginRequest) -> TokenResponse:
+    """
+    Authenticate a user and issue tokens.
+
+    Verifies the user's credentials and issues access and refresh tokens.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - data (LoginRequest): The login data including username/email and password.
+
+    Returns:
+    - TokenResponse: Authentication tokens and user information.
+
+    Raises:
+    - UnauthorizedError: If credentials are invalid.
+    """
     identifier = data.username or data.email
     if data.email:
         result = await db.execute(select(User).where(User.email == data.email))
@@ -97,6 +198,22 @@ async def login_user(db: AsyncSession, data: LoginRequest) -> TokenResponse:
 
 
 async def refresh_access_token(db: AsyncSession, refresh_token: str) -> TokenResponse:
+    """
+    Refresh access token using a valid refresh token.
+
+    Validates the refresh token, checks its existence and expiration,
+    then issues new access and refresh tokens.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - refresh_token (str): The refresh token string.
+
+    Returns:
+    - TokenResponse: New authentication tokens and user information.
+
+    Raises:
+    - UnauthorizedError: If the refresh token is invalid, expired, or not found.
+    """
     payload = decode_token(refresh_token)
     if payload.get("type") != "refresh":
         raise UnauthorizedError("Invalid token type")
@@ -128,6 +245,20 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> TokenRes
 
 
 async def _issue_tokens(db: AsyncSession, user: User, role: str = "user") -> TokenResponse:
+    """
+    Issue new access and refresh tokens for a user.
+
+    Creates and stores a new refresh token in the database,
+    then returns both access and refresh tokens along with user info.
+
+    Parameters:
+    - db (AsyncSession): The asynchronous database session.
+    - user (User): The user object.
+    - role (str): The user's role. Default "user".
+
+    Returns:
+    - TokenResponse: The token response with access, refresh tokens, and user data.
+    """
     access = create_access_token(user.id, role=role)
     refresh_str = create_refresh_token_str(user.id)
 
